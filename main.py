@@ -19,8 +19,26 @@ class QubitPuzzleGame:
     def __init__(self, root):
         self.root = root
         self.root.title("Infinity Qubit")
-        self.root.geometry("2000x1200")
+
+        # Get screen dimensions and set adaptive window size
+        screen_width = self.root.winfo_screenwidth()
+        screen_height = self.root.winfo_screenheight()
+
+        # Use 90% of screen width and 85% of screen height
+        window_width = int(screen_width * 0.75)
+        window_height = int(screen_height * 0.6)
+
+        # Calculate center position
+        x = (screen_width - window_width) // 2
+        y = (screen_height - window_height) // 2
+
+        # Set window geometry with centering
+        self.root.geometry(f"{window_width}x{window_height}+{x}+{y}")
         self.root.configure(bg='#1a1a1a')
+
+        # Store dimensions for adaptive scaling
+        self.window_width = window_width
+        self.window_height = window_height
 
         # Game state
         self.current_level = 0
@@ -32,14 +50,31 @@ class QubitPuzzleGame:
         self.setup_ui()
         self.load_level(self.current_level)
 
+    def load_levels(self):
+        """Load puzzle levels from JSON file or create defaults"""
+        try:
+            with open('levels.json', 'r') as f:
+                return json.load(f)
+        except FileNotFoundError:
+            # Create default levels if file doesn't exist
+            return self.create_default_levels()
+        except json.JSONDecodeError:
+            # If file is corrupted, recreate defaults
+            return self.create_default_levels()
+
     def setup_ui(self):
         # Main frame
         main_frame = tk.Frame(self.root, bg='#1a1a1a')
         main_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
 
+        # Adaptive font sizes based on screen resolution
+        title_font_size = max(16, int(self.window_width / 80))
+        header_font_size = max(12, int(self.window_width / 120))
+        normal_font_size = max(10, int(self.window_width / 160))
+
         # Title
         title_label = tk.Label(main_frame, text="🔬 Infinity Qubit",
-                            font=('Arial', 24, 'bold'), fg='#00ff88', bg='#1a1a1a')
+                            font=('Arial', title_font_size, 'bold'), fg='#00ff88', bg='#1a1a1a')
         title_label.pack(pady=(0, 10))
 
         # Level and score info - Centered under title
@@ -47,32 +82,39 @@ class QubitPuzzleGame:
         info_frame.pack(pady=(0, 20))
 
         self.level_label = tk.Label(info_frame, text="Level: 1",
-                                font=('Arial', 16, 'bold'), fg='#ffffff', bg='#1a1a1a')
+                                font=('Arial', header_font_size, 'bold'), fg='#ffffff', bg='#1a1a1a')
         self.level_label.pack(side=tk.LEFT, padx=20)
 
         self.score_label = tk.Label(info_frame, text="Score: 0",
-                                font=('Arial', 16, 'bold'), fg='#ffffff', bg='#1a1a1a')
+                                font=('Arial', header_font_size, 'bold'), fg='#ffffff', bg='#1a1a1a')
         self.score_label.pack(side=tk.LEFT, padx=20)
 
         # Add tutorial button - moved to top right corner
         tutorial_btn = tk.Button(main_frame, text="📚 Tutorial",
                                 command=lambda: show_tutorial(self.root),
-                                font=('Arial', 10), bg='#9b59b6', fg='#ffffff')
+                                font=('Arial', normal_font_size), bg='#9b59b6', fg='#ffffff')
         tutorial_btn.place(relx=0.98, rely=0.02, anchor='ne')
 
-        # Circuit area - Made much larger
+        # Circuit area - Made adaptive
         circuit_frame = tk.Frame(main_frame, bg='#2a2a2a', relief=tk.RAISED, bd=3)
         circuit_frame.pack(fill=tk.BOTH, expand=True, pady=(0, 15))
 
         # Circuit title
         circuit_title = tk.Label(circuit_frame, text="Quantum Circuit",
-                                font=('Arial', 20, 'bold'), fg='#00ff88', bg='#2a2a2a')
+                                font=('Arial', header_font_size + 2, 'bold'), fg='#00ff88', bg='#2a2a2a')
         circuit_title.pack(pady=15)
 
-        # Circuit canvas - Doubled in size (900x300 -> 1800x600)
-        self.circuit_canvas = tk.Canvas(circuit_frame, width=1800, height=600,
+        # Circuit canvas - Adaptive size based on window dimensions
+        canvas_width = int(self.window_width * 0.85)
+        canvas_height = int(self.window_height * 0.35)
+
+        self.circuit_canvas = tk.Canvas(circuit_frame, width=canvas_width, height=canvas_height,
                                     bg='#1a1a1a', highlightthickness=0)
         self.circuit_canvas.pack(pady=15)
+
+        # Store canvas dimensions for draw_circuit method
+        self.canvas_width = canvas_width
+        self.canvas_height = canvas_height
 
         # Gate placement area
         self.gate_frame = tk.Frame(circuit_frame, bg='#2a2a2a')
@@ -80,7 +122,7 @@ class QubitPuzzleGame:
 
         # Available gates - Centered
         gates_label = tk.Label(main_frame, text="Available Gates",
-                            font=('Arial', 16, 'bold'), fg='#ffffff', bg='#1a1a1a')
+                            font=('Arial', header_font_size, 'bold'), fg='#ffffff', bg='#1a1a1a')
         gates_label.pack(pady=(10, 5))
 
         self.gates_frame = tk.Frame(main_frame, bg='#1a1a1a')
@@ -90,47 +132,49 @@ class QubitPuzzleGame:
         controls_frame = tk.Frame(main_frame, bg='#1a1a1a')
         controls_frame.pack(pady=(15, 10))
 
+        button_font_size = max(10, int(self.window_width / 140))
+        button_padx = max(15, int(self.window_width / 80))
+        button_pady = max(5, int(self.window_height / 150))
+
         self.run_button = tk.Button(controls_frame, text="🚀 Run Circuit",
-                                command=self.run_circuit, font=('Arial', 14, 'bold'),
-                                bg='#00ff88', fg='#000000', padx=25, pady=8)
+                                command=self.run_circuit, font=('Arial', button_font_size, 'bold'),
+                                bg='#00ff88', fg='#000000', padx=button_padx, pady=button_pady)
         self.run_button.pack(side=tk.LEFT, padx=10)
 
         self.clear_button = tk.Button(controls_frame, text="🔄 Clear",
-                                    command=self.clear_circuit, font=('Arial', 14),
-                                    bg='#ff6b6b', fg='#ffffff', padx=25, pady=8)
+                                    command=self.clear_circuit, font=('Arial', button_font_size),
+                                    bg='#ff6b6b', fg='#ffffff', padx=button_padx, pady=button_pady)
         self.clear_button.pack(side=tk.LEFT, padx=10)
 
         self.hint_button = tk.Button(controls_frame, text="💡 Hint",
-                                    command=self.show_hint, font=('Arial', 14),
-                                    bg='#4ecdc4', fg='#000000', padx=25, pady=8)
+                                    command=self.show_hint, font=('Arial', button_font_size),
+                                    bg='#4ecdc4', fg='#000000', padx=button_padx, pady=button_pady)
         self.hint_button.pack(side=tk.LEFT, padx=10)
 
-        # Status area - Made much larger and more prominent
+        # Status area - Made adaptive
         status_frame = tk.Frame(main_frame, bg='#2a2a2a', relief=tk.RAISED, bd=3)
         status_frame.pack(fill=tk.X, pady=(15, 0))
 
         # Status title
         status_title = tk.Label(status_frame, text="🔍 Quantum State Information",
-                            font=('Arial', 16, 'bold'), fg='#00ff88', bg='#2a2a2a')
+                            font=('Arial', header_font_size, 'bold'), fg='#00ff88', bg='#2a2a2a')
         status_title.pack(pady=(10, 5))
 
         self.status_label = tk.Label(status_frame, text="Ready to solve puzzles!",
-                                    font=('Arial', 14), fg='#ffffff', bg='#2a2a2a')
+                                    font=('Arial', normal_font_size + 2), fg='#ffffff', bg='#2a2a2a')
         self.status_label.pack(pady=5)
 
-        # State display - Made much larger with better formatting
-        self.state_display = tk.Text(status_frame, height=12, width=100,
-                                    font=('Courier', 12), bg='#1a1a1a', fg='#00ff88',
+        # State display - Adaptive size
+        text_height = max(8, int(self.window_height / 100))
+        text_width = max(60, int(self.window_width / 20))
+        text_font_size = max(8, int(self.window_width / 180))
+
+        self.state_display = tk.Text(status_frame, height=text_height, width=text_width,
+                                    font=('Courier', text_font_size), bg='#1a1a1a', fg='#00ff88',
                                     relief=tk.SUNKEN, bd=2)
         self.state_display.pack(pady=15, padx=20)
 
-    def load_levels(self):
-        """Load puzzle levels from JSON or create default levels"""
-        try:
-            with open('levels.json', 'r') as f:
-                return json.load(f)
-        except FileNotFoundError:
-            return self.create_default_levels()
+
 
     def create_default_levels(self):
         """Create default puzzle levels"""
@@ -206,7 +250,7 @@ class QubitPuzzleGame:
         self.display_states(level)
 
     def setup_gates(self, available_gates):
-        """Setup available gate buttons"""
+        """Setup available gate buttons - Adaptive sizing"""
         # Clear existing gates
         for widget in self.gates_frame.winfo_children():
             widget.destroy()
@@ -219,12 +263,17 @@ class QubitPuzzleGame:
             'CNOT': '#ffeaa7'  # Yellow
         }
 
+        # Adaptive gate button sizing
+        gate_font_size = max(10, int(self.window_width / 160))
+        gate_width = max(4, int(self.window_width / 300))
+        gate_height = max(1, int(self.window_height / 600))
+
         for gate in available_gates:
             color = gate_colors.get(gate, '#ffffff')
             btn = tk.Button(self.gates_frame, text=gate,
-                          command=lambda g=gate: self.add_gate(g),
-                          font=('Arial', 12, 'bold'), bg=color, fg='#000000',
-                          width=6, height=2)
+                        command=lambda g=gate: self.add_gate(g),
+                        font=('Arial', gate_font_size, 'bold'), bg=color, fg='#000000',
+                        width=gate_width, height=gate_height)
             btn.pack(side=tk.LEFT, padx=5)
 
     def add_gate(self, gate):
@@ -239,87 +288,103 @@ class QubitPuzzleGame:
         self.draw_circuit()
 
     def draw_circuit(self):
-        """Draw the quantum circuit visualization - Updated for larger canvas"""
+        """Draw the quantum circuit visualization - Adaptive scaling"""
         self.circuit_canvas.delete("all")
 
         # Get current level info for proper qubit count
         level = self.levels[self.current_level]
         num_qubits = level['qubits']
 
-        # Circuit dimensions - Doubled all values for 2x size
-        wire_start = 200
-        wire_end = 1600
-        circuit_height = 600
+        # Adaptive circuit dimensions based on canvas size
+        wire_start = int(self.canvas_width * 0.12)
+        wire_end = int(self.canvas_width * 0.88)
+        circuit_height = self.canvas_height
         qubit_spacing = circuit_height // (num_qubits + 1)
 
-        # Draw input/output dividers and labels - Scaled up
-        input_x = wire_start - 80
-        output_x = wire_end + 80
+        # Adaptive sizing for elements
+        line_width = max(3, int(self.canvas_width / 300))
+        font_size = max(12, int(self.canvas_width / 75))
+
+        # Draw input/output dividers and labels - Adaptive
+        input_x = wire_start - int(self.canvas_width * 0.05)
+        output_x = wire_end + int(self.canvas_width * 0.05)
+        margin_y = int(circuit_height * 0.1)
 
         # Input section
-        self.circuit_canvas.create_line(input_x, 60, input_x, circuit_height - 60,
-                                    fill='#00ff88', width=6)
-        self.circuit_canvas.create_text(input_x - 60, circuit_height // 2, text="Input",
-                                    fill='#00ff88', font=('Arial', 24, 'bold'), angle=90)
+        self.circuit_canvas.create_line(input_x, margin_y, input_x, circuit_height - margin_y,
+                                    fill='#00ff88', width=line_width)
+        self.circuit_canvas.create_text(input_x - int(self.canvas_width * 0.04), circuit_height // 2,
+                                    text="Input", fill='#00ff88',
+                                    font=('Arial', font_size, 'bold'), angle=90)
 
         # Output section
-        self.circuit_canvas.create_line(output_x, 60, output_x, circuit_height - 60,
-                                    fill='#00ff88', width=6)
-        self.circuit_canvas.create_text(output_x + 60, circuit_height // 2, text="Output",
-                                    fill='#00ff88', font=('Arial', 24, 'bold'), angle=90)
+        self.circuit_canvas.create_line(output_x, margin_y, output_x, circuit_height - margin_y,
+                                    fill='#00ff88', width=line_width)
+        self.circuit_canvas.create_text(output_x + int(self.canvas_width * 0.04), circuit_height // 2,
+                                    text="Output", fill='#00ff88',
+                                    font=('Arial', font_size, 'bold'), angle=90)
 
-        # Draw quantum wires for each qubit
+        # Draw quantum wires for each qubit - Adaptive
         for qubit in range(num_qubits):
-            y_pos = (qubit + 1) * qubit_spacing + 60
+            y_pos = (qubit + 1) * qubit_spacing + margin_y
 
-            # Wire line - Thicker
+            # Wire line
             self.circuit_canvas.create_line(wire_start, y_pos, wire_end, y_pos,
-                                        fill='#ffffff', width=6)
+                                        fill='#ffffff', width=line_width)
 
-            # Qubit labels - Larger
-            self.circuit_canvas.create_text(wire_start - 30, y_pos, text=f"q{qubit}",
-                                        fill='#ffffff', font=('Arial', 20, 'bold'))
+            # Qubit labels
+            self.circuit_canvas.create_text(wire_start - int(self.canvas_width * 0.02), y_pos,
+                                        text=f"q{qubit}", fill='#ffffff',
+                                        font=('Arial', font_size - 2, 'bold'))
 
-        # Draw gates - All doubled in size
-        gate_width = 100
-        gate_height = 80
-        gate_spacing = 180
+        # Draw gates - Adaptive sizing with proper letter fitting
+        gate_width = max(60, int(self.canvas_width / 20))  # Increased from /30 to /20
+        gate_height = max(50, int(self.canvas_height / 12))  # Increased from /15 to /12
+        gate_spacing = max(120, int(self.canvas_width / 12))  # Increased spacing
+        gate_font_size = max(18, int(self.canvas_width / 75))  # Increased font size
 
         for i, gate in enumerate(self.placed_gates):
-            x = wire_start + 120 + i * gate_spacing
+            x = wire_start + int(self.canvas_width * 0.08) + i * gate_spacing
 
             if gate == 'CNOT' and num_qubits > 1:
-                # Special handling for CNOT gate - Scaled up
-                control_y = qubit_spacing + 60
-                target_y = 2 * qubit_spacing + 60
+                # Special handling for CNOT gate - Adaptive
+                control_y = qubit_spacing + margin_y
+                target_y = 2 * qubit_spacing + margin_y
+                dot_radius = max(10, int(self.canvas_width / 150))  # Slightly larger
 
-                # Control qubit (dot) - Larger
-                self.circuit_canvas.create_oval(x - 16, control_y - 16, x + 16, control_y + 16,
+                # Control qubit (dot)
+                self.circuit_canvas.create_oval(x - dot_radius, control_y - dot_radius,
+                                            x + dot_radius, control_y + dot_radius,
                                             fill='#ffffff', outline='#ffffff')
 
-                # Connection line - Thicker
+                # Connection line
                 self.circuit_canvas.create_line(x, control_y, x, target_y,
-                                            fill='#ffffff', width=6)
+                                            fill='#ffffff', width=line_width)
 
-                # Target qubit (X symbol) - Larger
-                self.circuit_canvas.create_oval(x - 40, target_y - 40, x + 40, target_y + 40,
-                                            fill='none', outline='#ffffff', width=6)
-                self.circuit_canvas.create_line(x - 24, target_y - 24, x + 24, target_y + 24,
-                                            fill='#ffffff', width=6)
-                self.circuit_canvas.create_line(x - 24, target_y + 24, x + 24, target_y - 24,
-                                            fill='#ffffff', width=6)
+                # Target qubit (X symbol)
+                target_radius = max(25, int(self.canvas_width / 60))  # Larger target
+                self.circuit_canvas.create_oval(x - target_radius, target_y - target_radius,
+                                            x + target_radius, target_y + target_radius,
+                                            fill='none', outline='#ffffff', width=line_width)
+                cross_size = target_radius * 0.6
+                self.circuit_canvas.create_line(x - cross_size, target_y - cross_size,
+                                            x + cross_size, target_y + cross_size,
+                                            fill='#ffffff', width=line_width)
+                self.circuit_canvas.create_line(x - cross_size, target_y + cross_size,
+                                            x + cross_size, target_y - cross_size,
+                                            fill='#ffffff', width=line_width)
             else:
-                # Single qubit gates - Doubled size
-                y_pos = qubit_spacing + 60
+                # Single qubit gates - Larger boxes to fit letters properly
+                y_pos = qubit_spacing + margin_y
 
-                # Gate box - Larger
+                # Gate box - Much larger to accommodate letters
                 self.circuit_canvas.create_rectangle(x - gate_width//2, y_pos - gate_height//2,
-                                            x + gate_width//2, y_pos + gate_height//2,
-                                            fill='#4ecdc4', outline='#ffffff', width=6)
+                                                x + gate_width//2, y_pos + gate_height//2,
+                                                fill='#4ecdc4', outline='#ffffff', width=line_width)
 
-                # Gate label - Larger font
+                # Gate label - Larger font and better positioning
                 self.circuit_canvas.create_text(x, y_pos, text=gate,
-                                            fill='#000000', font=('Arial', 32, 'bold'))
+                                            fill='#000000', font=('Arial', gate_font_size, 'bold'))
 
     def run_circuit(self):
         """Execute the quantum circuit and check result"""
@@ -459,11 +524,6 @@ class QubitPuzzleGame:
                                 font=('Arial', 20), fg='#ffffff', bg='#1a1a1a')
         efficiency_label.pack(pady=15)
 
-        if len(self.placed_gates) <= 2:
-            bonus_label = tk.Label(congrats_window, text="🌟 EXCELLENT EFFICIENCY! 🌟",
-                                font=('Arial', 18, 'bold'), fg='#ffd700', bg='#1a1a1a')
-            bonus_label.pack(pady=20)
-
         # Button frame for better spacing
         button_frame = tk.Frame(congrats_window, bg='#1a1a1a')
         button_frame.pack(pady=(50, 40))
@@ -546,6 +606,11 @@ class QubitPuzzleGame:
             # Focus and key bindings
             restart_btn.focus_set()
             complete_window.bind('<Return>', lambda e: self.restart_from_complete(complete_window))
+
+    def restart_from_complete(self, dialog_window):
+        """Close completion dialog and restart game"""
+        dialog_window.destroy()
+        self.restart_game()
 
     def restart_game(self):
         """Restart the game from level 1"""
