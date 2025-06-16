@@ -19,7 +19,7 @@ class QubitPuzzleGame:
     def __init__(self, root):
         self.root = root
         self.root.title("Infinity Qubit")
-        self.root.geometry("1000x700")
+        self.root.geometry("2000x1200")
         self.root.configure(bg='#1a1a1a')
 
         # Game state
@@ -40,83 +40,89 @@ class QubitPuzzleGame:
         # Title
         title_label = tk.Label(main_frame, text="🔬 Infinity Qubit",
                             font=('Arial', 24, 'bold'), fg='#00ff88', bg='#1a1a1a')
-        title_label.pack(pady=(0, 20))
+        title_label.pack(pady=(0, 10))
 
-        # Level and score info
+        # Level and score info - Centered under title
         info_frame = tk.Frame(main_frame, bg='#1a1a1a')
-        info_frame.pack(fill=tk.X, pady=(0, 10))
+        info_frame.pack(pady=(0, 20))
 
         self.level_label = tk.Label(info_frame, text="Level: 1",
-                                font=('Arial', 14), fg='#ffffff', bg='#1a1a1a')
-        self.level_label.pack(side=tk.LEFT)
+                                font=('Arial', 16, 'bold'), fg='#ffffff', bg='#1a1a1a')
+        self.level_label.pack(side=tk.LEFT, padx=20)
 
         self.score_label = tk.Label(info_frame, text="Score: 0",
-                                font=('Arial', 14), fg='#ffffff', bg='#1a1a1a')
-        self.score_label.pack(side=tk.RIGHT)
+                                font=('Arial', 16, 'bold'), fg='#ffffff', bg='#1a1a1a')
+        self.score_label.pack(side=tk.LEFT, padx=20)
 
-        # Add tutorial button
-        tutorial_btn = tk.Button(info_frame, text="📚 Tutorial",
+        # Add tutorial button - moved to top right corner
+        tutorial_btn = tk.Button(main_frame, text="📚 Tutorial",
                                 command=lambda: show_tutorial(self.root),
                                 font=('Arial', 10), bg='#9b59b6', fg='#ffffff')
-        tutorial_btn.pack(side=tk.RIGHT, padx=(0, 10))
+        tutorial_btn.place(relx=0.98, rely=0.02, anchor='ne')
 
-        # Circuit area
-        circuit_frame = tk.Frame(main_frame, bg='#2a2a2a', relief=tk.RAISED, bd=2)
-        circuit_frame.pack(fill=tk.BOTH, expand=True, pady=(0, 20))
+        # Circuit area - Made much larger
+        circuit_frame = tk.Frame(main_frame, bg='#2a2a2a', relief=tk.RAISED, bd=3)
+        circuit_frame.pack(fill=tk.BOTH, expand=True, pady=(0, 15))
 
         # Circuit title
         circuit_title = tk.Label(circuit_frame, text="Quantum Circuit",
-                                font=('Arial', 16, 'bold'), fg='#00ff88', bg='#2a2a2a')
-        circuit_title.pack(pady=10)
+                                font=('Arial', 20, 'bold'), fg='#00ff88', bg='#2a2a2a')
+        circuit_title.pack(pady=15)
 
-        # Circuit canvas - Fixed size to match draw_circuit method
-        self.circuit_canvas = tk.Canvas(circuit_frame, width=900, height=300,
+        # Circuit canvas - Doubled in size (900x300 -> 1800x600)
+        self.circuit_canvas = tk.Canvas(circuit_frame, width=1800, height=600,
                                     bg='#1a1a1a', highlightthickness=0)
-        self.circuit_canvas.pack(pady=10)
+        self.circuit_canvas.pack(pady=15)
 
         # Gate placement area
         self.gate_frame = tk.Frame(circuit_frame, bg='#2a2a2a')
-        self.gate_frame.pack(fill=tk.X, padx=20, pady=10)
+        self.gate_frame.pack(fill=tk.X, padx=20, pady=15)
 
-        # Available gates
+        # Available gates - Centered
         gates_label = tk.Label(main_frame, text="Available Gates",
-                            font=('Arial', 14, 'bold'), fg='#ffffff', bg='#1a1a1a')
-        gates_label.pack()
+                            font=('Arial', 16, 'bold'), fg='#ffffff', bg='#1a1a1a')
+        gates_label.pack(pady=(10, 5))
 
         self.gates_frame = tk.Frame(main_frame, bg='#1a1a1a')
         self.gates_frame.pack(pady=10)
 
-        # Control buttons
+        # Control buttons - Centered under available gates
         controls_frame = tk.Frame(main_frame, bg='#1a1a1a')
-        controls_frame.pack(fill=tk.X, pady=10)
+        controls_frame.pack(pady=(15, 10))
 
         self.run_button = tk.Button(controls_frame, text="🚀 Run Circuit",
-                                command=self.run_circuit, font=('Arial', 12, 'bold'),
-                                bg='#00ff88', fg='#000000', padx=20)
-        self.run_button.pack(side=tk.LEFT, padx=5)
+                                command=self.run_circuit, font=('Arial', 14, 'bold'),
+                                bg='#00ff88', fg='#000000', padx=25, pady=8)
+        self.run_button.pack(side=tk.LEFT, padx=10)
 
         self.clear_button = tk.Button(controls_frame, text="🔄 Clear",
-                                    command=self.clear_circuit, font=('Arial', 12),
-                                    bg='#ff6b6b', fg='#ffffff', padx=20)
-        self.clear_button.pack(side=tk.LEFT, padx=5)
+                                    command=self.clear_circuit, font=('Arial', 14),
+                                    bg='#ff6b6b', fg='#ffffff', padx=25, pady=8)
+        self.clear_button.pack(side=tk.LEFT, padx=10)
 
         self.hint_button = tk.Button(controls_frame, text="💡 Hint",
-                                    command=self.show_hint, font=('Arial', 12),
-                                    bg='#4ecdc4', fg='#000000', padx=20)
-        self.hint_button.pack(side=tk.LEFT, padx=5)
+                                    command=self.show_hint, font=('Arial', 14),
+                                    bg='#4ecdc4', fg='#000000', padx=25, pady=8)
+        self.hint_button.pack(side=tk.LEFT, padx=10)
 
-        # Status area
-        status_frame = tk.Frame(main_frame, bg='#2a2a2a', relief=tk.SUNKEN, bd=2)
-        status_frame.pack(fill=tk.X, pady=(10, 0))
+        # Status area - Made much larger and more prominent
+        status_frame = tk.Frame(main_frame, bg='#2a2a2a', relief=tk.RAISED, bd=3)
+        status_frame.pack(fill=tk.X, pady=(15, 0))
+
+        # Status title
+        status_title = tk.Label(status_frame, text="🔍 Quantum State Information",
+                            font=('Arial', 16, 'bold'), fg='#00ff88', bg='#2a2a2a')
+        status_title.pack(pady=(10, 5))
 
         self.status_label = tk.Label(status_frame, text="Ready to solve puzzles!",
-                                    font=('Arial', 12), fg='#ffffff', bg='#2a2a2a')
-        self.status_label.pack(pady=10)
+                                    font=('Arial', 14), fg='#ffffff', bg='#2a2a2a')
+        self.status_label.pack(pady=5)
 
-        # State display
-        self.state_display = tk.Text(status_frame, height=6, width=60,
-                                    font=('Courier', 10), bg='#1a1a1a', fg='#00ff88')
-        self.state_display.pack(pady=5)
+        # State display - Made much larger with better formatting
+        self.state_display = tk.Text(status_frame, height=12, width=100,
+                                    font=('Courier', 12), bg='#1a1a1a', fg='#00ff88',
+                                    relief=tk.SUNKEN, bd=2)
+        self.state_display.pack(pady=15, padx=20)
 
     def load_levels(self):
         """Load puzzle levels from JSON or create default levels"""
@@ -233,87 +239,87 @@ class QubitPuzzleGame:
         self.draw_circuit()
 
     def draw_circuit(self):
-        """Draw the quantum circuit visualization"""
+        """Draw the quantum circuit visualization - Updated for larger canvas"""
         self.circuit_canvas.delete("all")
 
         # Get current level info for proper qubit count
         level = self.levels[self.current_level]
         num_qubits = level['qubits']
 
-        # Circuit dimensions - Updated for larger canvas
-        wire_start = 100
-        wire_end = 800
-        circuit_height = 300
+        # Circuit dimensions - Doubled all values for 2x size
+        wire_start = 200
+        wire_end = 1600
+        circuit_height = 600
         qubit_spacing = circuit_height // (num_qubits + 1)
 
-        # Draw input/output dividers and labels
-        input_x = wire_start - 40
-        output_x = wire_end + 40
+        # Draw input/output dividers and labels - Scaled up
+        input_x = wire_start - 80
+        output_x = wire_end + 80
 
         # Input section
-        self.circuit_canvas.create_line(input_x, 30, input_x, circuit_height - 30,
-                                    fill='#00ff88', width=3)
-        self.circuit_canvas.create_text(input_x - 30, circuit_height // 2, text="Input",
-                                    fill='#00ff88', font=('Arial', 14, 'bold'), angle=90)
+        self.circuit_canvas.create_line(input_x, 60, input_x, circuit_height - 60,
+                                    fill='#00ff88', width=6)
+        self.circuit_canvas.create_text(input_x - 60, circuit_height // 2, text="Input",
+                                    fill='#00ff88', font=('Arial', 24, 'bold'), angle=90)
 
         # Output section
-        self.circuit_canvas.create_line(output_x, 30, output_x, circuit_height - 30,
-                                    fill='#00ff88', width=3)
-        self.circuit_canvas.create_text(output_x + 30, circuit_height // 2, text="Output",
-                                    fill='#00ff88', font=('Arial', 14, 'bold'), angle=90)
+        self.circuit_canvas.create_line(output_x, 60, output_x, circuit_height - 60,
+                                    fill='#00ff88', width=6)
+        self.circuit_canvas.create_text(output_x + 60, circuit_height // 2, text="Output",
+                                    fill='#00ff88', font=('Arial', 24, 'bold'), angle=90)
 
         # Draw quantum wires for each qubit
         for qubit in range(num_qubits):
-            y_pos = (qubit + 1) * qubit_spacing + 30
+            y_pos = (qubit + 1) * qubit_spacing + 60
 
-            # Wire line
+            # Wire line - Thicker
             self.circuit_canvas.create_line(wire_start, y_pos, wire_end, y_pos,
-                                        fill='#ffffff', width=3)
+                                        fill='#ffffff', width=6)
 
-            # Qubit labels - Fixed positioning
-            self.circuit_canvas.create_text(wire_start - 15, y_pos, text=f"q{qubit}",
-                                        fill='#ffffff', font=('Arial', 12, 'bold'))
+            # Qubit labels - Larger
+            self.circuit_canvas.create_text(wire_start - 30, y_pos, text=f"q{qubit}",
+                                        fill='#ffffff', font=('Arial', 20, 'bold'))
 
-        # Draw gates
-        gate_width = 50
-        gate_height = 40
-        gate_spacing = 90
+        # Draw gates - All doubled in size
+        gate_width = 100
+        gate_height = 80
+        gate_spacing = 180
 
         for i, gate in enumerate(self.placed_gates):
-            x = wire_start + 60 + i * gate_spacing
+            x = wire_start + 120 + i * gate_spacing
 
             if gate == 'CNOT' and num_qubits > 1:
-                # Special handling for CNOT gate (control and target)
-                control_y = qubit_spacing + 30
-                target_y = 2 * qubit_spacing + 30
+                # Special handling for CNOT gate - Scaled up
+                control_y = qubit_spacing + 60
+                target_y = 2 * qubit_spacing + 60
 
-                # Control qubit (dot)
-                self.circuit_canvas.create_oval(x - 8, control_y - 8, x + 8, control_y + 8,
+                # Control qubit (dot) - Larger
+                self.circuit_canvas.create_oval(x - 16, control_y - 16, x + 16, control_y + 16,
                                             fill='#ffffff', outline='#ffffff')
 
-                # Connection line
+                # Connection line - Thicker
                 self.circuit_canvas.create_line(x, control_y, x, target_y,
-                                            fill='#ffffff', width=3)
+                                            fill='#ffffff', width=6)
 
-                # Target qubit (X symbol)
-                self.circuit_canvas.create_oval(x - 20, target_y - 20, x + 20, target_y + 20,
-                                            fill='none', outline='#ffffff', width=3)
-                self.circuit_canvas.create_line(x - 12, target_y - 12, x + 12, target_y + 12,
-                                            fill='#ffffff', width=3)
-                self.circuit_canvas.create_line(x - 12, target_y + 12, x + 12, target_y - 12,
-                                            fill='#ffffff', width=3)
+                # Target qubit (X symbol) - Larger
+                self.circuit_canvas.create_oval(x - 40, target_y - 40, x + 40, target_y + 40,
+                                            fill='none', outline='#ffffff', width=6)
+                self.circuit_canvas.create_line(x - 24, target_y - 24, x + 24, target_y + 24,
+                                            fill='#ffffff', width=6)
+                self.circuit_canvas.create_line(x - 24, target_y + 24, x + 24, target_y - 24,
+                                            fill='#ffffff', width=6)
             else:
-                # Single qubit gates
-                y_pos = qubit_spacing + 30
+                # Single qubit gates - Doubled size
+                y_pos = qubit_spacing + 60
 
-                # Gate box
+                # Gate box - Larger
                 self.circuit_canvas.create_rectangle(x - gate_width//2, y_pos - gate_height//2,
                                             x + gate_width//2, y_pos + gate_height//2,
-                                            fill='#4ecdc4', outline='#ffffff', width=3)
+                                            fill='#4ecdc4', outline='#ffffff', width=6)
 
-                # Gate label
+                # Gate label - Larger font
                 self.circuit_canvas.create_text(x, y_pos, text=gate,
-                                            fill='#000000', font=('Arial', 16, 'bold'))
+                                            fill='#000000', font=('Arial', 32, 'bold'))
 
     def run_circuit(self):
         """Execute the quantum circuit and check result"""
@@ -356,14 +362,15 @@ class QubitPuzzleGame:
             # Get final state using Statevector
             final_state = Statevector(qc)
 
+            # Display current state FIRST (before checking solution)
+            self.display_current_state(final_state.data)
+
             # Check if puzzle is solved
             if self.check_solution(final_state, level):
+                self.status_label.config(text="🎉 Puzzle solved! Great job!")
                 self.puzzle_solved()
             else:
                 self.status_label.config(text="Not quite right. Try again!")
-
-            # Display current state
-            self.display_current_state(final_state.data)
 
         except Exception as e:
             self.status_label.config(text=f"Error: {str(e)}")
@@ -419,15 +426,133 @@ class QubitPuzzleGame:
         self.score += 100 - len(self.placed_gates) * 5  # Bonus for efficiency
         self.score_label.config(text=f"Score: {self.score}")
 
-        messagebox.showinfo("Congratulations!",
-                           f"Puzzle solved! Score: {100 - len(self.placed_gates) * 5}")
+        # Create a custom congratulations dialog - Made even larger
+        congrats_window = tk.Toplevel(self.root)
+        congrats_window.title("🎉 Congratulations!")
+        congrats_window.geometry("800x600")  # Made even larger
+        congrats_window.configure(bg='#1a1a1a')
+        congrats_window.resizable(False, False)
 
+        # Make sure it stays on top and is modal
+        congrats_window.transient(self.root)
+        congrats_window.grab_set()
+        congrats_window.focus_set()
+        congrats_window.lift()
+        congrats_window.attributes('-topmost', True)
+
+        # Center on parent window - Updated for new size
+        congrats_window.update_idletasks()
+        x = self.root.winfo_x() + (self.root.winfo_width() // 2) - 400
+        y = self.root.winfo_y() + (self.root.winfo_height() // 2) - 300
+        congrats_window.geometry(f"800x600+{x}+{y}")
+
+        # Congratulations content - Larger spacing and fonts
+        title_label = tk.Label(congrats_window, text="🎉 PUZZLE SOLVED! 🎉",
+                            font=('Arial', 32, 'bold'), fg='#00ff88', bg='#1a1a1a')
+        title_label.pack(pady=(50, 30))
+
+        score_label = tk.Label(congrats_window, text=f"Score: {100 - len(self.placed_gates) * 5}",
+                            font=('Arial', 24, 'bold'), fg='#ffffff', bg='#1a1a1a')
+        score_label.pack(pady=20)
+
+        efficiency_label = tk.Label(congrats_window, text=f"Gates Used: {len(self.placed_gates)}",
+                                font=('Arial', 20), fg='#ffffff', bg='#1a1a1a')
+        efficiency_label.pack(pady=15)
+
+        if len(self.placed_gates) <= 2:
+            bonus_label = tk.Label(congrats_window, text="🌟 EXCELLENT EFFICIENCY! 🌟",
+                                font=('Arial', 18, 'bold'), fg='#ffd700', bg='#1a1a1a')
+            bonus_label.pack(pady=20)
+
+        # Button frame for better spacing
+        button_frame = tk.Frame(congrats_window, bg='#1a1a1a')
+        button_frame.pack(pady=(50, 40))
+
+        # Continue button - Made MUCH larger and more prominent
+        continue_btn = tk.Button(button_frame, text="🚀 Continue to Next Level",
+                                command=lambda: self.continue_to_next_level(congrats_window),
+                                font=('Arial', 20, 'bold'), bg='#00ff88', fg='#000000',
+                                padx=60, pady=25, relief=tk.RAISED, bd=5)
+        continue_btn.pack(pady=20)
+
+        # Focus on the button so Enter key works
+        continue_btn.focus_set()
+
+        # Bind keys
+        congrats_window.bind('<Return>', lambda e: self.continue_to_next_level(congrats_window))
+        congrats_window.bind('<Escape>', lambda e: self.continue_to_next_level(congrats_window))
+        congrats_window.bind('<space>', lambda e: self.continue_to_next_level(congrats_window))
+
+        # Add a close button as backup - Also larger
+        close_btn = tk.Button(button_frame, text="❌ Close",
+                            command=lambda: congrats_window.destroy(),
+                            font=('Arial', 14), bg='#ff6b6b', fg='#ffffff',
+                            padx=30, pady=15)
+        close_btn.pack(pady=10)
+
+    def continue_to_next_level(self, dialog_window):
+        """Close dialog and advance to next level"""
+        dialog_window.destroy()
+        self.advance_level()
+
+    def advance_level(self):
+        """Advance to the next level"""
         # Move to next level
         if self.current_level < len(self.levels) - 1:
             self.load_level(self.current_level + 1)
         else:
-            messagebox.showinfo("Game Complete!",
-                               f"You've completed all levels! Final Score: {self.score}")
+            # Game complete dialog - also larger
+            complete_window = tk.Toplevel(self.root)
+            complete_window.title("🏆 Game Complete!")
+            complete_window.geometry("600x450")  # Made taller
+            complete_window.configure(bg='#1a1a1a')
+            complete_window.resizable(False, False)
+
+            # Make sure it stays on top
+            complete_window.transient(self.root)
+            complete_window.grab_set()
+            complete_window.focus_set()
+            complete_window.lift()
+            complete_window.attributes('-topmost', True)
+
+            # Center on parent window
+            complete_window.update_idletasks()
+            x = self.root.winfo_x() + (self.root.winfo_width() // 2) - 300
+            y = self.root.winfo_y() + (self.root.winfo_height() // 2) - 225
+            complete_window.geometry(f"600x450+{x}+{y}")
+
+            title_label = tk.Label(complete_window, text="🏆 CONGRATULATIONS! 🏆",
+                                font=('Arial', 24, 'bold'), fg='#ffd700', bg='#1a1a1a')
+            title_label.pack(pady=(30, 15))
+
+            complete_label = tk.Label(complete_window, text="You've completed all levels!",
+                                    font=('Arial', 18), fg='#ffffff', bg='#1a1a1a')
+            complete_label.pack(pady=10)
+
+            final_score_label = tk.Label(complete_window, text=f"Final Score: {self.score}",
+                                        font=('Arial', 20, 'bold'), fg='#00ff88', bg='#1a1a1a')
+            final_score_label.pack(pady=15)
+
+            # Button frame
+            button_frame = tk.Frame(complete_window, bg='#1a1a1a')
+            button_frame.pack(pady=(20, 20))
+
+            restart_btn = tk.Button(button_frame, text="Play Again",
+                                command=lambda: self.restart_from_complete(complete_window),
+                                font=('Arial', 14, 'bold'), bg='#00ff88', fg='#000000',
+                                padx=40, pady=12, relief=tk.RAISED, bd=3)
+            restart_btn.pack(pady=10)
+
+            # Focus and key bindings
+            restart_btn.focus_set()
+            complete_window.bind('<Return>', lambda e: self.restart_from_complete(complete_window))
+
+    def restart_game(self):
+        """Restart the game from level 1"""
+        self.current_level = 0
+        self.score = 0
+        self.placed_gates = []
+        self.load_level(0)
 
     def show_hint(self):
         """Show hint for current level"""
@@ -444,6 +569,17 @@ class QubitPuzzleGame:
 
     def display_current_state(self, state_vector):
         """Display the current quantum state"""
+        # Clear the display first to avoid accumulation
+        self.state_display.delete(1.0, tk.END)
+
+        # Show level info again
+        level = self.levels[self.current_level]
+        self.state_display.insert(tk.END, f"Input State: {level['input_state']}\n")
+        self.state_display.insert(tk.END, f"Target State: {level['target_state']}\n")
+        self.state_display.insert(tk.END, f"Qubits: {level['qubits']}\n")
+        self.state_display.insert(tk.END, "-" * 40 + "\n")
+
+        # Show current state
         self.state_display.insert(tk.END, f"Current State Vector:\n")
         for i, amplitude in enumerate(state_vector):
             if abs(amplitude) > 0.001:  # Only show non-zero amplitudes
