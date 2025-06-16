@@ -18,7 +18,7 @@ except ImportError:
 class QubitPuzzleGame:
     def __init__(self, root):
         self.root = root
-        self.root.title("Qubit Puzzle Solver")
+        self.root.title("Infinity Qubit")
         self.root.geometry("1000x700")
         self.root.configure(bg='#1a1a1a')
 
@@ -38,7 +38,7 @@ class QubitPuzzleGame:
         main_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
 
         # Title
-        title_label = tk.Label(main_frame, text="🔬 Qubit Puzzle Solver",
+        title_label = tk.Label(main_frame, text="🔬 Infinity Qubit",
                               font=('Arial', 24, 'bold'), fg='#00ff88', bg='#1a1a1a')
         title_label.pack(pady=(0, 20))
 
