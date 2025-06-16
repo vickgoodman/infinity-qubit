@@ -1,6 +1,4 @@
-# infinity-qubit
-
-# 🔬 Qubit Puzzle Solver
+# 🔬 Infinity Qubit
 
 An educational quantum computing puzzle game where players learn quantum gates by solving circuit puzzles.
 
@@ -17,7 +15,7 @@ Transform quantum states by placing gates in the correct sequence! Each level pr
 ### Prerequisites
 
 ```bash
-pip install qiskit numpy
+pip install qiskit numpy qiskit-aer
 ```
 
 ### Running the Game
