@@ -39,7 +39,7 @@ class QubitPuzzleGame:
 
         # Title
         title_label = tk.Label(main_frame, text="🔬 Infinity Qubit",
-                              font=('Arial', 24, 'bold'), fg='#00ff88', bg='#1a1a1a')
+                            font=('Arial', 24, 'bold'), fg='#00ff88', bg='#1a1a1a')
         title_label.pack(pady=(0, 20))
 
         # Level and score info
@@ -47,11 +47,11 @@ class QubitPuzzleGame:
         info_frame.pack(fill=tk.X, pady=(0, 10))
 
         self.level_label = tk.Label(info_frame, text="Level: 1",
-                                   font=('Arial', 14), fg='#ffffff', bg='#1a1a1a')
+                                font=('Arial', 14), fg='#ffffff', bg='#1a1a1a')
         self.level_label.pack(side=tk.LEFT)
 
         self.score_label = tk.Label(info_frame, text="Score: 0",
-                                   font=('Arial', 14), fg='#ffffff', bg='#1a1a1a')
+                                font=('Arial', 14), fg='#ffffff', bg='#1a1a1a')
         self.score_label.pack(side=tk.RIGHT)
 
         # Add tutorial button
@@ -69,9 +69,9 @@ class QubitPuzzleGame:
                                 font=('Arial', 16, 'bold'), fg='#00ff88', bg='#2a2a2a')
         circuit_title.pack(pady=10)
 
-        # Circuit canvas
-        self.circuit_canvas = tk.Canvas(circuit_frame, width=800, height=200,
-                                       bg='#1a1a1a', highlightthickness=0)
+        # Circuit canvas - Fixed size to match draw_circuit method
+        self.circuit_canvas = tk.Canvas(circuit_frame, width=900, height=300,
+                                    bg='#1a1a1a', highlightthickness=0)
         self.circuit_canvas.pack(pady=10)
 
         # Gate placement area
@@ -80,7 +80,7 @@ class QubitPuzzleGame:
 
         # Available gates
         gates_label = tk.Label(main_frame, text="Available Gates",
-                              font=('Arial', 14, 'bold'), fg='#ffffff', bg='#1a1a1a')
+                            font=('Arial', 14, 'bold'), fg='#ffffff', bg='#1a1a1a')
         gates_label.pack()
 
         self.gates_frame = tk.Frame(main_frame, bg='#1a1a1a')
@@ -91,13 +91,13 @@ class QubitPuzzleGame:
         controls_frame.pack(fill=tk.X, pady=10)
 
         self.run_button = tk.Button(controls_frame, text="🚀 Run Circuit",
-                                   command=self.run_circuit, font=('Arial', 12, 'bold'),
-                                   bg='#00ff88', fg='#000000', padx=20)
+                                command=self.run_circuit, font=('Arial', 12, 'bold'),
+                                bg='#00ff88', fg='#000000', padx=20)
         self.run_button.pack(side=tk.LEFT, padx=5)
 
         self.clear_button = tk.Button(controls_frame, text="🔄 Clear",
-                                     command=self.clear_circuit, font=('Arial', 12),
-                                     bg='#ff6b6b', fg='#ffffff', padx=20)
+                                    command=self.clear_circuit, font=('Arial', 12),
+                                    bg='#ff6b6b', fg='#ffffff', padx=20)
         self.clear_button.pack(side=tk.LEFT, padx=5)
 
         self.hint_button = tk.Button(controls_frame, text="💡 Hint",
@@ -236,38 +236,84 @@ class QubitPuzzleGame:
         """Draw the quantum circuit visualization"""
         self.circuit_canvas.delete("all")
 
-        # Draw quantum wire
-        y_center = 100
-        wire_start = 50
-        wire_end = 750
+        # Get current level info for proper qubit count
+        level = self.levels[self.current_level]
+        num_qubits = level['qubits']
 
-        self.circuit_canvas.create_line(wire_start, y_center, wire_end, y_center,
-                                       fill='#ffffff', width=2)
+        # Circuit dimensions - Updated for larger canvas
+        wire_start = 100
+        wire_end = 800
+        circuit_height = 300
+        qubit_spacing = circuit_height // (num_qubits + 1)
 
-        # Draw input state
-        self.circuit_canvas.create_text(25, y_center, text="Input",
-                                       fill='#ffffff', font=('Arial', 10))
+        # Draw input/output dividers and labels
+        input_x = wire_start - 40
+        output_x = wire_end + 40
+
+        # Input section
+        self.circuit_canvas.create_line(input_x, 30, input_x, circuit_height - 30,
+                                    fill='#00ff88', width=3)
+        self.circuit_canvas.create_text(input_x - 30, circuit_height // 2, text="Input",
+                                    fill='#00ff88', font=('Arial', 14, 'bold'), angle=90)
+
+        # Output section
+        self.circuit_canvas.create_line(output_x, 30, output_x, circuit_height - 30,
+                                    fill='#00ff88', width=3)
+        self.circuit_canvas.create_text(output_x + 30, circuit_height // 2, text="Output",
+                                    fill='#00ff88', font=('Arial', 14, 'bold'), angle=90)
+
+        # Draw quantum wires for each qubit
+        for qubit in range(num_qubits):
+            y_pos = (qubit + 1) * qubit_spacing + 30
+
+            # Wire line
+            self.circuit_canvas.create_line(wire_start, y_pos, wire_end, y_pos,
+                                        fill='#ffffff', width=3)
+
+            # Qubit labels - Fixed positioning
+            self.circuit_canvas.create_text(wire_start - 15, y_pos, text=f"q{qubit}",
+                                        fill='#ffffff', font=('Arial', 12, 'bold'))
 
         # Draw gates
         gate_width = 50
-        gate_spacing = 60
+        gate_height = 40
+        gate_spacing = 90
 
         for i, gate in enumerate(self.placed_gates):
-            x = wire_start + 50 + i * gate_spacing
+            x = wire_start + 60 + i * gate_spacing
 
-            # Gate box
-            self.circuit_canvas.create_rectangle(x - gate_width//2, y_center - 20,
-                                               x + gate_width//2, y_center + 20,
-                                               fill='#4ecdc4', outline='#ffffff', width=2)
+            if gate == 'CNOT' and num_qubits > 1:
+                # Special handling for CNOT gate (control and target)
+                control_y = qubit_spacing + 30
+                target_y = 2 * qubit_spacing + 30
 
-            # Gate label
-            self.circuit_canvas.create_text(x, y_center, text=gate,
-                                          fill='#000000', font=('Arial', 12, 'bold'))
+                # Control qubit (dot)
+                self.circuit_canvas.create_oval(x - 8, control_y - 8, x + 8, control_y + 8,
+                                            fill='#ffffff', outline='#ffffff')
 
-        # Draw output
-        output_x = wire_start + 50 + len(self.placed_gates) * gate_spacing + 50
-        self.circuit_canvas.create_text(output_x, y_center, text="Output",
-                                       fill='#ffffff', font=('Arial', 10))
+                # Connection line
+                self.circuit_canvas.create_line(x, control_y, x, target_y,
+                                            fill='#ffffff', width=3)
+
+                # Target qubit (X symbol)
+                self.circuit_canvas.create_oval(x - 20, target_y - 20, x + 20, target_y + 20,
+                                            fill='none', outline='#ffffff', width=3)
+                self.circuit_canvas.create_line(x - 12, target_y - 12, x + 12, target_y + 12,
+                                            fill='#ffffff', width=3)
+                self.circuit_canvas.create_line(x - 12, target_y + 12, x + 12, target_y - 12,
+                                            fill='#ffffff', width=3)
+            else:
+                # Single qubit gates
+                y_pos = qubit_spacing + 30
+
+                # Gate box
+                self.circuit_canvas.create_rectangle(x - gate_width//2, y_pos - gate_height//2,
+                                            x + gate_width//2, y_pos + gate_height//2,
+                                            fill='#4ecdc4', outline='#ffffff', width=3)
+
+                # Gate label
+                self.circuit_canvas.create_text(x, y_pos, text=gate,
+                                            fill='#000000', font=('Arial', 16, 'bold'))
 
     def run_circuit(self):
         """Execute the quantum circuit and check result"""
@@ -281,6 +327,19 @@ class QubitPuzzleGame:
             # Create quantum circuit
             qc = QuantumCircuit(level['qubits'])
 
+            # Initialize circuit to the input state
+            initial_state = self.get_initial_state(level)
+            if level['input_state'] == "|1⟩":
+                qc.x(0)  # Start with |1⟩
+            elif level['input_state'] == "|+⟩":
+                qc.h(0)  # Start with |+⟩
+            elif level['input_state'] == "|-⟩":
+                qc.x(0)
+                qc.h(0)  # Start with |-⟩
+            elif level['input_state'] == "|00⟩":
+                pass  # Already starts with |00⟩
+            # Add more initial states as needed
+
             # Apply gates
             for gate in self.placed_gates:
                 if gate == 'H':
@@ -290,7 +349,7 @@ class QubitPuzzleGame:
                 elif gate == 'Z':
                     qc.z(0)
                 elif gate == 'I':
-                    qc.i(0)
+                    qc.id(0)  # Identity gate
                 elif gate == 'CNOT' and level['qubits'] > 1:
                     qc.cx(0, 1)
 
@@ -332,6 +391,25 @@ class QubitPuzzleGame:
         elif target == "|00⟩":
             return np.array([1, 0, 0, 0])
         elif target == "|Φ+⟩":  # Bell state
+            return np.array([1, 0, 0, 1]) / np.sqrt(2)
+
+        return np.array([1, 0])  # Default
+
+    def get_initial_state(self, level):
+        """Get the initial quantum state"""
+        initial = level['input_state']
+
+        if initial == "|0⟩":
+            return np.array([1, 0])
+        elif initial == "|1⟩":
+            return np.array([0, 1])
+        elif initial == "|+⟩":
+            return np.array([1, 1]) / np.sqrt(2)
+        elif initial == "|-⟩":
+            return np.array([1, -1]) / np.sqrt(2)
+        elif initial == "|00⟩":
+            return np.array([1, 0, 0, 0])
+        elif initial == "|Φ+⟩":  # Bell state
             return np.array([1, 0, 0, 1]) / np.sqrt(2)
 
         return np.array([1, 0])  # Default
