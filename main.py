@@ -8,6 +8,7 @@ from qiskit_aer import Aer
 # from qiskit.primitives import Sampler
 from qiskit.quantum_info import Statevector
 import math
+import pygame  # Add this import for sound
 
 try:
     from game_tutorial import show_tutorial
@@ -19,6 +20,15 @@ class QubitPuzzleGame:
     def __init__(self, root):
         self.root = root
         self.root.title("Infinity Qubit")
+
+        # Initialize pygame mixer for sound
+        try:
+            pygame.mixer.init(frequency=22050, size=-16, channels=2, buffer=512)
+            self.sound_enabled = True
+            self.load_sounds()
+        except pygame.error:
+            print("Warning: Could not initialize sound system")
+            self.sound_enabled = False
 
         # Get screen dimensions and set adaptive window size
         screen_width = self.root.winfo_screenwidth()
@@ -49,6 +59,92 @@ class QubitPuzzleGame:
         # Initialize UI
         self.setup_ui()
         self.load_level(self.current_level)
+
+    def load_sounds(self):
+        """Load sound effects for the game"""
+        self.sounds = {}
+
+        # Define sound files for each gate and action
+        sound_files = {
+            'H': 'sounds/hadamard.wav',        # Hadamard gate sound
+            'X': 'sounds/pauli_x.wav',         # X gate sound
+            'Z': 'sounds/pauli_z.wav',         # Z gate sound
+            'I': 'sounds/identity.wav',        # Identity gate sound
+            'CNOT': 'sounds/cnot.wav',         # CNOT gate sound
+            'run_circuit': 'sounds/run_circuit.wav',    # Run circuit sound
+            'clear': 'sounds/clear.wav',       # Clear circuit sound
+            'hint': 'sounds/hint.wav',         # Hint button sound
+            'success': 'sounds/success.wav',   # Puzzle solved sound
+            'error': 'sounds/error.wav',       # Error sound
+            'level_up': 'sounds/level_up.wav', # Level completion sound
+            'button_click': 'sounds/click.wav', # General button click
+            'game_complete': 'sounds/victory.wav' # Game completion sound
+        }
+
+        # Load each sound file
+        for sound_name, file_path in sound_files.items():
+            try:
+                self.sounds[sound_name] = pygame.mixer.Sound(file_path)
+                # Set volume levels (0.0 to 1.0)
+                if sound_name in ['H', 'X', 'Z', 'I', 'CNOT']:
+                    self.sounds[sound_name].set_volume(0.7)  # Gate sounds
+                elif sound_name in ['success', 'level_up', 'game_complete']:
+                    self.sounds[sound_name].set_volume(0.9)  # Success sounds
+                else:
+                    self.sounds[sound_name].set_volume(0.6)  # Other sounds
+            except pygame.error:
+                print(f"Warning: Could not load sound file: {file_path}")
+                self.sounds[sound_name] = None
+
+    def play_sound(self, sound_name):
+        """Play a sound effect"""
+        if self.sound_enabled and sound_name in self.sounds and self.sounds[sound_name]:
+            try:
+                self.sounds[sound_name].play()
+            except pygame.error:
+                pass  # Ignore sound errors
+
+    def create_sound_effects_programmatically(self):
+        """Create simple sound effects programmatically if sound files don't exist"""
+        if not self.sound_enabled:
+            return
+
+        # Create simple beep sounds for different gates
+        sample_rate = 22050
+
+        # Different frequencies for different gates
+        gate_frequencies = {
+            'H': 440,    # A note - Hadamard
+            'X': 523,    # C note - X gate
+            'Z': 659,    # E note - Z gate
+            'I': 349,    # F note - Identity
+            'CNOT': [440, 523]  # Chord for CNOT
+        }
+
+        for gate, freq in gate_frequencies.items():
+            if gate not in self.sounds or not self.sounds[gate]:
+                try:
+                    if isinstance(freq, list):
+                        # Create chord for CNOT
+                        duration = 0.2
+                        frames = int(duration * sample_rate)
+                        arr = np.zeros(frames)
+                        for f in freq:
+                            arr += np.sin(2 * np.pi * f * np.linspace(0, duration, frames))
+                        arr = arr / len(freq)  # Normalize
+                    else:
+                        # Create single tone
+                        duration = 0.15
+                        frames = int(duration * sample_rate)
+                        arr = np.sin(2 * np.pi * freq * np.linspace(0, duration, frames))
+
+                    # Convert to pygame sound
+                    arr = (arr * 32767).astype(np.int16)
+                    sound = pygame.sndarray.make_sound(arr)
+                    sound.set_volume(0.3)
+                    self.sounds[gate] = sound
+                except:
+                    pass  # Ignore if numpy/pygame sound creation fails
 
     def load_levels(self):
         """Load puzzle levels from JSON file or create defaults"""
@@ -91,7 +187,7 @@ class QubitPuzzleGame:
 
         # Add tutorial button - moved to top right corner
         tutorial_btn = tk.Button(main_frame, text="📚 Tutorial",
-                                command=lambda: show_tutorial(self.root),
+                                command=lambda: [self.play_sound('button_click'), show_tutorial(self.root)],
                                 font=('Arial', normal_font_size), bg='#9b59b6', fg='#ffffff')
         tutorial_btn.place(relx=0.98, rely=0.02, anchor='ne')
 
@@ -174,7 +270,9 @@ class QubitPuzzleGame:
                                     relief=tk.SUNKEN, bd=2)
         self.state_display.pack(pady=15, padx=20)
 
-
+        # Initialize sound effects after UI is created
+        if self.sound_enabled:
+            self.create_sound_effects_programmatically()
 
     def create_default_levels(self):
         """Create default puzzle levels"""
@@ -277,15 +375,19 @@ class QubitPuzzleGame:
             btn.pack(side=tk.LEFT, padx=5)
 
     def add_gate(self, gate):
-        """Add a gate to the circuit"""
+        """Add a gate to the circuit with sound effect"""
         if len(self.placed_gates) < 10:  # Limit gates
             self.placed_gates.append(gate)
             self.draw_circuit()
 
+            # Play gate-specific sound
+            self.play_sound(gate)
+
     def clear_circuit(self):
-        """Clear all placed gates"""
+        """Clear all placed gates with sound"""
         self.placed_gates = []
         self.draw_circuit()
+        self.play_sound('clear')
 
     def draw_circuit(self):
         """Draw the quantum circuit visualization - Adaptive scaling"""
@@ -387,10 +489,14 @@ class QubitPuzzleGame:
                                             fill='#000000', font=('Arial', gate_font_size, 'bold'))
 
     def run_circuit(self):
-        """Execute the quantum circuit and check result"""
+        """Execute the quantum circuit and check result with sound"""
         if not self.placed_gates:
             self.status_label.config(text="Add some gates first!")
+            self.play_sound('error')
             return
+
+        # Play run circuit sound
+        self.play_sound('run_circuit')
 
         level = self.levels[self.current_level]
 
@@ -433,12 +539,16 @@ class QubitPuzzleGame:
             # Check if puzzle is solved
             if self.check_solution(final_state, level):
                 self.status_label.config(text="🎉 Puzzle solved! Great job!")
-                self.puzzle_solved()
+                self.play_sound('success')
+                # Delay puzzle_solved to let success sound play
+                self.root.after(500, self.puzzle_solved)
             else:
                 self.status_label.config(text="Not quite right. Try again!")
+                self.play_sound('error')
 
         except Exception as e:
             self.status_label.config(text=f"Error: {str(e)}")
+            self.play_sound('error')
 
     def check_solution(self, final_state, level):
         """Check if the current state matches the target"""
@@ -487,7 +597,10 @@ class QubitPuzzleGame:
         return np.array([1, 0])  # Default
 
     def puzzle_solved(self):
-        """Handle puzzle completion"""
+        """Handle puzzle completion with enhanced sound"""
+        # Play level up sound
+        self.play_sound('level_up')
+
         self.score += 100 - len(self.placed_gates) * 5  # Bonus for efficiency
         self.score_label.config(text=f"Score: {self.score}")
 
@@ -530,7 +643,7 @@ class QubitPuzzleGame:
 
         # Continue button - Made MUCH larger and more prominent
         continue_btn = tk.Button(button_frame, text="🚀 Continue to Next Level",
-                                command=lambda: self.continue_to_next_level(congrats_window),
+                                command=lambda: [self.play_sound('button_click'), self.continue_to_next_level(congrats_window)],
                                 font=('Arial', 20, 'bold'), bg='#00ff88', fg='#000000',
                                 padx=60, pady=25, relief=tk.RAISED, bd=5)
         continue_btn.pack(pady=20)
@@ -539,13 +652,13 @@ class QubitPuzzleGame:
         continue_btn.focus_set()
 
         # Bind keys
-        congrats_window.bind('<Return>', lambda e: self.continue_to_next_level(congrats_window))
-        congrats_window.bind('<Escape>', lambda e: self.continue_to_next_level(congrats_window))
-        congrats_window.bind('<space>', lambda e: self.continue_to_next_level(congrats_window))
+        congrats_window.bind('<Return>', lambda e: [self.play_sound('button_click'), self.continue_to_next_level(congrats_window)])
+        congrats_window.bind('<Escape>', lambda e: [self.play_sound('button_click'), self.continue_to_next_level(congrats_window)])
+        congrats_window.bind('<space>', lambda e: [self.play_sound('button_click'), self.continue_to_next_level(congrats_window)])
 
         # Add a close button as backup - Also larger
         close_btn = tk.Button(button_frame, text="❌ Close",
-                            command=lambda: congrats_window.destroy(),
+                            command=lambda: [self.play_sound('button_click'), congrats_window.destroy()],
                             font=('Arial', 14), bg='#ff6b6b', fg='#ffffff',
                             padx=30, pady=15)
         close_btn.pack(pady=10)
@@ -561,6 +674,9 @@ class QubitPuzzleGame:
         if self.current_level < len(self.levels) - 1:
             self.load_level(self.current_level + 1)
         else:
+            # Play game complete sound
+            self.play_sound('game_complete')
+
             # Game complete dialog - also larger
             complete_window = tk.Toplevel(self.root)
             complete_window.title("🏆 Game Complete!")
@@ -598,14 +714,14 @@ class QubitPuzzleGame:
             button_frame.pack(pady=(20, 20))
 
             restart_btn = tk.Button(button_frame, text="Play Again",
-                                command=lambda: self.restart_from_complete(complete_window),
+                                command=lambda: [self.play_sound('button_click'), self.restart_from_complete(complete_window)],
                                 font=('Arial', 14, 'bold'), bg='#00ff88', fg='#000000',
                                 padx=40, pady=12, relief=tk.RAISED, bd=3)
             restart_btn.pack(pady=10)
 
             # Focus and key bindings
             restart_btn.focus_set()
-            complete_window.bind('<Return>', lambda e: self.restart_from_complete(complete_window))
+            complete_window.bind('<Return>', lambda e: [self.play_sound('button_click'), self.restart_from_complete(complete_window)])
 
     def restart_from_complete(self, dialog_window):
         """Close completion dialog and restart game"""
@@ -620,9 +736,10 @@ class QubitPuzzleGame:
         self.load_level(0)
 
     def show_hint(self):
-        """Show hint for current level"""
+        """Show hint for current level with sound"""
         hint = self.levels[self.current_level]['hint']
         messagebox.showinfo("Hint", hint)
+        self.play_sound('hint')
 
     def display_states(self, level):
         """Display input and target states"""
