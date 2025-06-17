@@ -112,25 +112,10 @@ class QubitPuzzleGame:
 
         # Circuit area - Made adaptive
 
-        # bg_image2 = Image.open("Circuit_Background.jpg")  # Use your image file
-        # bg_image2 = bg_image2.resize((self.window_width, int(self.window_height * 0.35)))
-        # bg_photo2 = ImageTk.PhotoImage(bg_image2)
-
-        # circuit_frame = tk.Frame(main_frame, relief=tk.RAISED, bd=3)
-        # circuit_frame.pack()
-
-        # bg_label2 = tk.Label(circuit_frame, image=bg_photo2)
-        # bg_label2.place(x=0, y=0, relwidth = 1, relheight = 1)
-        # circuit_frame.bg_photo = bg_photo2
-
         circuit_frame = tk.Frame(main_frame, bg='#2a2a2a', relief=tk.RAISED, bd=3)
         circuit_frame.pack(fill=tk.BOTH, expand=True, pady=(0, 15))
 
         # Circuit title
-
-        # bg_image2 = Image.open("Circuit_Background.jpg")  # Use your image file
-        # bg_image2 = bg_image2.resize((self.window_width, int(self.window_height * 0.35)))
-        # bg_photo2 = ImageTk.PhotoImage(bg_image2)
 
         circuit_title = tk.Label(circuit_frame, text="Quantum Circuit",
                                 font=('Arial', header_font_size + 2, 'bold'), fg='#00ff88', bg='#1a1a1a', compound='center')
@@ -688,12 +673,6 @@ class QubitPuzzleGame:
 
 def main():
     root = tk.Tk()
-
-    # # Load and display the background image
-    # bg_image = Image.open("Quantum_Background.jpg")  # Use your image file
-    # bg_photo = ImageTk.PhotoImage(bg_image)
-    # bg_label = Label(root, image=bg_photo)
-    # bg_label.place(x=0, y=0, relwidth=1, relheight=1)
 
     game = QubitPuzzleGame(root)
     root.mainloop()
