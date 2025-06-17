@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import ttk, messagebox
+from tkinter import ttk, messagebox, Tk, Label
 import json
 import numpy as np
 # Updated Qiskit imports for newer versions
@@ -8,6 +8,7 @@ from qiskit_aer import Aer
 # from qiskit.primitives import Sampler
 from qiskit.quantum_info import Statevector
 import math
+from PIL import Image, ImageTk
 
 try:
     from game_tutorial import show_tutorial
@@ -34,7 +35,8 @@ class QubitPuzzleGame:
 
         # Set window geometry with centering
         self.root.geometry(f"{window_width}x{window_height}+{x}+{y}")
-        self.root.configure(bg='#1a1a1a')
+        # self.root.configure(bg='#1a1a1a')
+        self.root.configure(bg='#ffffff')
 
         # Store dimensions for adaptive scaling
         self.window_width = window_width
@@ -64,7 +66,20 @@ class QubitPuzzleGame:
 
     def setup_ui(self):
         # Main frame
-        main_frame = tk.Frame(self.root, bg='#1a1a1a')
+        # main_frame = tk.Frame(self.root, bg='#1a1a1a')
+        # main_frame = tk.Frame(self.root, bg='#ffffff')
+
+        bg_image = Image.open("Quantum_Background.jpg")  # Use your image file
+        bg_photo = ImageTk.PhotoImage(bg_image)
+
+        main_frame = tk.Frame(self.root)
+        main_frame.pack(fill='both', expand = True)
+
+        bg_label = tk.Label(main_frame, image=bg_photo)
+        bg_label.place(x=0, y=0, relwidth = 1, relheight = 1)
+
+        main_frame.bg_photo = bg_photo
+
         main_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
 
         # Adaptive font sizes based on screen resolution
@@ -96,12 +111,30 @@ class QubitPuzzleGame:
         tutorial_btn.place(relx=0.98, rely=0.02, anchor='ne')
 
         # Circuit area - Made adaptive
+
+        # bg_image2 = Image.open("Circuit_Background.jpg")  # Use your image file
+        # bg_image2 = bg_image2.resize((self.window_width, int(self.window_height * 0.35)))
+        # bg_photo2 = ImageTk.PhotoImage(bg_image2)
+
+        # circuit_frame = tk.Frame(main_frame, relief=tk.RAISED, bd=3)
+        # circuit_frame.pack()
+
+        # bg_label2 = tk.Label(circuit_frame, image=bg_photo2)
+        # bg_label2.place(x=0, y=0, relwidth = 1, relheight = 1)
+        # circuit_frame.bg_photo = bg_photo2
+
         circuit_frame = tk.Frame(main_frame, bg='#2a2a2a', relief=tk.RAISED, bd=3)
         circuit_frame.pack(fill=tk.BOTH, expand=True, pady=(0, 15))
 
         # Circuit title
+
+        # bg_image2 = Image.open("Circuit_Background.jpg")  # Use your image file
+        # bg_image2 = bg_image2.resize((self.window_width, int(self.window_height * 0.35)))
+        # bg_photo2 = ImageTk.PhotoImage(bg_image2)
+
         circuit_title = tk.Label(circuit_frame, text="Quantum Circuit",
-                                font=('Arial', header_font_size + 2, 'bold'), fg='#00ff88', bg='#2a2a2a')
+                                font=('Arial', header_font_size + 2, 'bold'), fg='#00ff88', bg='#1a1a1a', compound='center')
+        # circuit_title.image = bg_photo2
         circuit_title.pack(pady=15)
 
         # Circuit canvas - Adaptive size based on window dimensions
@@ -110,6 +143,7 @@ class QubitPuzzleGame:
 
         self.circuit_canvas = tk.Canvas(circuit_frame, width=canvas_width, height=canvas_height,
                                     bg='#1a1a1a', highlightthickness=0)
+        
         self.circuit_canvas.pack(pady=15)
 
         # Store canvas dimensions for draw_circuit method
@@ -654,6 +688,13 @@ class QubitPuzzleGame:
 
 def main():
     root = tk.Tk()
+
+    # # Load and display the background image
+    # bg_image = Image.open("Quantum_Background.jpg")  # Use your image file
+    # bg_photo = ImageTk.PhotoImage(bg_image)
+    # bg_label = Label(root, image=bg_photo)
+    # bg_label.place(x=0, y=0, relwidth=1, relheight=1)
+
     game = QubitPuzzleGame(root)
     root.mainloop()
 
