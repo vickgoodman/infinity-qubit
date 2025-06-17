@@ -85,11 +85,15 @@ class QubitPuzzleGame:
         for sound_name, file_path in sound_files.items():
             try:
                 self.sounds[sound_name] = pygame.mixer.Sound(file_path)
-                # Set volume levels (0.0 to 1.0)
+                # Set volume levels (0.0 to 1.0) - Adjusted volumes
                 if sound_name in ['H', 'X', 'Z', 'I', 'CNOT']:
                     self.sounds[sound_name].set_volume(0.7)  # Gate sounds
-                elif sound_name in ['success', 'level_up', 'game_complete']:
-                    self.sounds[sound_name].set_volume(0.9)  # Success sounds
+                elif sound_name in ['success', 'level_up']:
+                    self.sounds[sound_name].set_volume(0.8)  # Success sounds - reduced from 0.9
+                elif sound_name == 'run_circuit':
+                    self.sounds[sound_name].set_volume(0.4)  # Run circuit - reduced from 0.6
+                elif sound_name == 'game_complete':
+                    self.sounds[sound_name].set_volume(0.9)  # Victory sound
                 else:
                     self.sounds[sound_name].set_volume(0.6)  # Other sounds
             except pygame.error:
@@ -100,9 +104,14 @@ class QubitPuzzleGame:
         """Play a sound effect"""
         if self.sound_enabled and sound_name in self.sounds and self.sounds[sound_name]:
             try:
+                # print(f"Attempting to play sound: {sound_name}")  # Debug line
                 self.sounds[sound_name].play()
-            except pygame.error:
+                # print(f"Successfully played sound: {sound_name}")  # Debug line
+            except pygame.error as e:
+                # print(f"Error playing sound {sound_name}: {e}")  # Debug line
                 pass  # Ignore sound errors
+        # else:
+            # print(f"Sound not available or disabled: {sound_name}")  # Debug line
 
     def create_sound_effects_programmatically(self):
         """Create simple sound effects programmatically if sound files don't exist"""
@@ -118,7 +127,7 @@ class QubitPuzzleGame:
             'X': 523,    # C note - X gate
             'Z': 659,    # E note - Z gate
             'I': 349,    # F note - Identity
-            'CNOT': [440, 523]  # Chord for CNOT
+            'CNOT': [440, 523]  # Fixed: Changed from 523 to [440, 523] for chord
         }
 
         for gate, freq in gate_frequencies.items():
@@ -141,9 +150,15 @@ class QubitPuzzleGame:
                     # Convert to pygame sound
                     arr = (arr * 32767).astype(np.int16)
                     sound = pygame.sndarray.make_sound(arr)
-                    sound.set_volume(0.3)
+                    # Set appropriate volume for programmatically created sounds
+                    if gate == 'CNOT':
+                        sound.set_volume(0.4)  # CNOT slightly quieter
+                    else:
+                        sound.set_volume(0.3)
                     self.sounds[gate] = sound
-                except:
+                    print(f"Created programmatic sound for {gate}")  # Debug line
+                except Exception as e:
+                    print(f"Failed to create sound for {gate}: {e}")  # Debug line
                     pass  # Ignore if numpy/pygame sound creation fails
 
     def load_levels(self):
@@ -242,6 +257,7 @@ class QubitPuzzleGame:
                                     bg='#ff6b6b', fg='#ffffff', padx=button_padx, pady=button_pady)
         self.clear_button.pack(side=tk.LEFT, padx=10)
 
+        # Fixed hint button - play sound immediately when clicked
         self.hint_button = tk.Button(controls_frame, text="💡 Hint",
                                     command=self.show_hint, font=('Arial', button_font_size),
                                     bg='#4ecdc4', fg='#000000', padx=button_padx, pady=button_pady)
@@ -380,7 +396,8 @@ class QubitPuzzleGame:
             self.placed_gates.append(gate)
             self.draw_circuit()
 
-            # Play gate-specific sound
+            # Play gate-specific sound - Fixed for CNOT
+            print(f"Playing sound for gate: {gate}")  # Debug line
             self.play_sound(gate)
 
     def clear_circuit(self):
@@ -414,17 +431,17 @@ class QubitPuzzleGame:
 
         # Input section
         self.circuit_canvas.create_line(input_x, margin_y, input_x, circuit_height - margin_y,
-                                    fill='#00ff88', width=line_width)
+                                fill='#00ff88', width=line_width)
         self.circuit_canvas.create_text(input_x - int(self.canvas_width * 0.04), circuit_height // 2,
-                                    text="Input", fill='#00ff88',
-                                    font=('Arial', font_size, 'bold'), angle=90)
+                                text="Input", fill='#00ff88',
+                                font=('Arial', font_size, 'bold'), angle=90)
 
         # Output section
         self.circuit_canvas.create_line(output_x, margin_y, output_x, circuit_height - margin_y,
-                                    fill='#00ff88', width=line_width)
+                                fill='#00ff88', width=line_width)
         self.circuit_canvas.create_text(output_x + int(self.canvas_width * 0.04), circuit_height // 2,
-                                    text="Output", fill='#00ff88',
-                                    font=('Arial', font_size, 'bold'), angle=90)
+                                text="Output", fill='#00ff88',
+                                font=('Arial', font_size, 'bold'), angle=90)
 
         # Draw quantum wires for each qubit - Adaptive
         for qubit in range(num_qubits):
@@ -432,12 +449,12 @@ class QubitPuzzleGame:
 
             # Wire line
             self.circuit_canvas.create_line(wire_start, y_pos, wire_end, y_pos,
-                                        fill='#ffffff', width=line_width)
+                                    fill='#ffffff', width=line_width)
 
             # Qubit labels
             self.circuit_canvas.create_text(wire_start - int(self.canvas_width * 0.02), y_pos,
-                                        text=f"q{qubit}", fill='#ffffff',
-                                        font=('Arial', font_size - 2, 'bold'))
+                                    text=f"q{qubit}", fill='#ffffff',
+                                    font=('Arial', font_size - 2, 'bold'))
 
         # Draw gates - Adaptive sizing with proper letter fitting
         gate_width = max(60, int(self.canvas_width / 20))  # Increased from /30 to /20
@@ -456,37 +473,37 @@ class QubitPuzzleGame:
 
                 # Control qubit (dot)
                 self.circuit_canvas.create_oval(x - dot_radius, control_y - dot_radius,
-                                            x + dot_radius, control_y + dot_radius,
-                                            fill='#ffffff', outline='#ffffff')
+                                        x + dot_radius, control_y + dot_radius,
+                                        fill='#ffffff', outline='#ffffff')
 
                 # Connection line
                 self.circuit_canvas.create_line(x, control_y, x, target_y,
-                                            fill='#ffffff', width=line_width)
+                                        fill='#ffffff', width=line_width)
 
-                # Target qubit (X symbol)
+                # Target qubit (X symbol) - FIXED: Changed fill='none' to fill=''
                 target_radius = max(25, int(self.canvas_width / 60))  # Larger target
                 self.circuit_canvas.create_oval(x - target_radius, target_y - target_radius,
-                                            x + target_radius, target_y + target_radius,
-                                            fill='none', outline='#ffffff', width=line_width)
+                                        x + target_radius, target_y + target_radius,
+                                        fill='', outline='#ffffff', width=line_width)  # Fixed: fill='' instead of fill='none'
                 cross_size = target_radius * 0.6
                 self.circuit_canvas.create_line(x - cross_size, target_y - cross_size,
-                                            x + cross_size, target_y + cross_size,
-                                            fill='#ffffff', width=line_width)
+                                        x + cross_size, target_y + cross_size,
+                                        fill='#ffffff', width=line_width)
                 self.circuit_canvas.create_line(x - cross_size, target_y + cross_size,
-                                            x + cross_size, target_y - cross_size,
-                                            fill='#ffffff', width=line_width)
+                                        x + cross_size, target_y - cross_size,
+                                        fill='#ffffff', width=line_width)
             else:
                 # Single qubit gates - Larger boxes to fit letters properly
                 y_pos = qubit_spacing + margin_y
 
                 # Gate box - Much larger to accommodate letters
                 self.circuit_canvas.create_rectangle(x - gate_width//2, y_pos - gate_height//2,
-                                                x + gate_width//2, y_pos + gate_height//2,
-                                                fill='#4ecdc4', outline='#ffffff', width=line_width)
+                                            x + gate_width//2, y_pos + gate_height//2,
+                                            fill='#4ecdc4', outline='#ffffff', width=line_width)
 
                 # Gate label - Larger font and better positioning
                 self.circuit_canvas.create_text(x, y_pos, text=gate,
-                                            fill='#000000', font=('Arial', gate_font_size, 'bold'))
+                                        fill='#000000', font=('Arial', gate_font_size, 'bold'))
 
     def run_circuit(self):
         """Execute the quantum circuit and check result with sound"""
@@ -494,9 +511,6 @@ class QubitPuzzleGame:
             self.status_label.config(text="Add some gates first!")
             self.play_sound('error')
             return
-
-        # Play run circuit sound
-        self.play_sound('run_circuit')
 
         level = self.levels[self.current_level]
 
@@ -538,13 +552,17 @@ class QubitPuzzleGame:
 
             # Check if puzzle is solved
             if self.check_solution(final_state, level):
+                # SUCCESS: Play only success sound, not run_circuit sound
                 self.status_label.config(text="🎉 Puzzle solved! Great job!")
                 self.play_sound('success')
                 # Delay puzzle_solved to let success sound play
                 self.root.after(500, self.puzzle_solved)
             else:
+                # INCORRECT: Play run_circuit sound first, then error sound
+                self.play_sound('run_circuit')
                 self.status_label.config(text="Not quite right. Try again!")
-                self.play_sound('error')
+                # Delay error sound to avoid overlap
+                self.root.after(300, lambda: self.play_sound('error'))
 
         except Exception as e:
             self.status_label.config(text=f"Error: {str(e)}")
@@ -737,9 +755,12 @@ class QubitPuzzleGame:
 
     def show_hint(self):
         """Show hint for current level with sound"""
+        # Play hint sound IMMEDIATELY when button is clicked
+        self.play_sound('hint')
+
         hint = self.levels[self.current_level]['hint']
         messagebox.showinfo("Hint", hint)
-        self.play_sound('hint')
+        # Remove the second play_sound call that was happening after OK
 
     def display_states(self, level):
         """Display input and target states"""
