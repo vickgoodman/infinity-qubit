@@ -308,42 +308,33 @@ class GameModeSelection:
                 pass
     
     def create_selection_ui(self):
-        """Create the game mode selection interface - SIMPLIFIED"""
+        """Create the game mode selection interface"""
         # Main container
         main_frame = tk.Frame(self.root, bg='#1a1a1a')
         main_frame.pack(fill=tk.BOTH, expand=True, padx=40, pady=30)
-        
-        # Test button at the top
-        test_btn = tk.Button(main_frame, text="🔴 TEST BUTTON - CLICK ME",
-                            command=lambda: print("TEST BUTTON WORKS!"),
-                            font=('Arial', 14, 'bold'),
-                            bg='#ff0000', fg='#ffffff',
-                            padx=20, pady=10,
-                            cursor='hand2')
-        test_btn.pack(pady=10)
         
         # Title
         title_label = tk.Label(main_frame, text="🔬 Infinity Qubit",
                             font=('Arial', 32, 'bold'), 
                             fg='#00ff88', bg='#1a1a1a')
-        title_label.pack(pady=(10, 5))
+        title_label.pack(pady=(20, 10))
         
         # Subtitle
         subtitle_label = tk.Label(main_frame, text="Choose Your Quantum Adventure",
                                 font=('Arial', 16), 
                                 fg='#ffffff', bg='#1a1a1a')
-        subtitle_label.pack(pady=(0, 20))
+        subtitle_label.pack(pady=(0, 30))
         
-        # Game mode buttons container - SIMPLIFIED
+        # Game mode buttons container
         buttons_frame = tk.Frame(main_frame, bg='#1a1a1a')
-        buttons_frame.pack(expand=True, fill=tk.BOTH, pady=10)
+        buttons_frame.pack(expand=True, fill=tk.BOTH, pady=20)
         
         # Create game mode buttons
         self.create_game_mode_buttons(buttons_frame)
         
         # Footer with just the exit button
         footer_frame = tk.Frame(main_frame, bg='#1a1a1a')
-        footer_frame.pack(side=tk.BOTTOM, fill=tk.X, pady=10)
+        footer_frame.pack(side=tk.BOTTOM, fill=tk.X, pady=20)
         
         # Exit button
         exit_btn = tk.Button(footer_frame, text="❌ Exit Game",
@@ -354,40 +345,45 @@ class GameModeSelection:
                             cursor='hand2')
         exit_btn.pack(side=tk.RIGHT)
         
-        # Simple test to verify button creation
+        # Version info
+        version_label = tk.Label(footer_frame, text="Version 1.0 | Built with Qiskit",
+                                font=('Arial', 10), 
+                                fg='#888888', bg='#1a1a1a')
+        version_label.pack(side=tk.LEFT)
+        
         print("UI created successfully")
-    
+
     def create_game_mode_buttons(self, parent):
         """Create the game mode selection buttons"""
         # Button configurations
         button_configs = [
             {
-                'title': '🎮 Puzzle Mode',
-                'description': 'Learn quantum computing through\ninteractive puzzles and challenges',
-                'detail': 'Progress through levels, solve quantum puzzles,\nand master quantum gates step by step',
-                'color': '#00ff88',
-                'command': self.start_puzzle_mode
-            },
-            {
                 'title': '📚 Tutorial Mode',
                 'description': 'Interactive tutorial to learn\nquantum computing basics',
-                'detail': 'Perfect for beginners! Learn quantum concepts\nwith guided explanations and examples',
+                'detail': '',
                 'color': '#9b59b6',
                 'command': self.start_tutorial_mode
             },
             {
+                'title': '🎮 Puzzle Mode',
+                'description': 'Learn quantum computing through\ninteractive puzzles and challenges',
+                'detail': '',
+                'color': '#00ff88',
+                'command': self.start_puzzle_mode
+            },       
+            {
                 'title': '🛠️ Sandbox Mode',
                 'description': 'Free-form quantum circuit builder\nwith real-time visualization',
-                'detail': 'Experiment freely with quantum gates,\nbuild custom circuits, and explore quantum states',
+                'detail': '',
                 'color': '#f39c12',
                 'command': self.start_sandbox_mode
             },
             {
-                'title': '🚀 Challenge Mode',
-                'description': 'Advanced quantum challenges\nfor experienced users',
-                'detail': 'Test your quantum knowledge with\ncomplex puzzles and time-based challenges',
+                'title': '🚀 Learn Hub',
+                'description': 'Explore quantum computing concepts\nand resources in a dedicated hub',
+                'detail': '',
                 'color': '#e74c3c',
-                'command': self.start_challenge_mode,
+                'command': self.start_learn_hub_mode,
                 'coming_soon': True
             }
         ]
@@ -403,86 +399,6 @@ class GameModeSelection:
                 col = 0
                 row += 1
 
-    # def create_mode_button(self, parent, config, row, col):
-    #     """Create a single game mode button"""
-    #     # Button frame
-    #     button_frame = tk.Frame(parent, bg='#2a2a2a', relief=tk.RAISED, bd=3)
-    #     button_frame.grid(row=row, column=col, padx=20, pady=15, sticky='nsew')
-        
-    #     # Configure grid weights for equal sizing
-    #     parent.grid_rowconfigure(row, weight=1)
-    #     parent.grid_columnconfigure(col, weight=1)
-        
-    #     # Button content frame
-    #     content_frame = tk.Frame(button_frame, bg='#2a2a2a')
-    #     content_frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
-        
-    #     # Title
-    #     title_label = tk.Label(content_frame, text=config['title'],
-    #                         font=('Arial', 18, 'bold'), 
-    #                         fg=config['color'], bg='#2a2a2a')
-    #     title_label.pack(pady=(0, 10))
-        
-    #     # Description
-    #     desc_label = tk.Label(content_frame, text=config['description'],
-    #                         font=('Arial', 12), 
-    #                         fg='#ffffff', bg='#2a2a2a',
-    #                         justify=tk.CENTER)
-    #     desc_label.pack(pady=(0, 8))
-        
-    #     # Detail text
-    #     detail_label = tk.Label(content_frame, text=config['detail'],
-    #                         font=('Arial', 10), 
-    #                         fg='#cccccc', bg='#2a2a2a',
-    #                         justify=tk.CENTER)
-    #     detail_label.pack(pady=(0, 15))
-        
-    #     # Coming soon badge if applicable
-    #     if config.get('coming_soon', False):
-    #         coming_soon_label = tk.Label(content_frame, text="🔜 Coming Soon",
-    #                                     font=('Arial', 10, 'bold'), 
-    #                                     fg='#ff6b6b', bg='#2a2a2a')
-    #         coming_soon_label.pack(pady=(0, 10))
-        
-    #     # Action button - SIMPLIFIED VERSION
-    #     button_text = "Select Mode" if not config.get('coming_soon', False) else "Coming Soon"
-    #     button_state = tk.NORMAL if not config.get('coming_soon', False) else tk.DISABLED
-        
-    #     # Create a simple command function with proper closure
-    #     def button_command():
-    #         print(f"Button clicked: {config['title']}")
-    #         self.play_sound()
-    #         config['command']()
-        
-    #     action_btn = tk.Button(content_frame, text=button_text,
-    #                         command=button_command if not config.get('coming_soon', False) else None,
-    #                         font=('Arial', 12, 'bold'), 
-    #                         bg=config['color'], fg='#000000',
-    #                         padx=25, pady=10, state=button_state,
-    #                         relief=tk.RAISED, bd=2,
-    #                         cursor='hand2')
-    #     action_btn.pack()
-        
-    #     # Simple hover effects
-    #     if not config.get('coming_soon', False):
-    #         original_color = config['color']
-    #         hover_color = self.lighten_color(original_color)
-            
-    #         def on_enter(event):
-    #             action_btn.configure(bg=hover_color)
-            
-    #         def on_leave(event):
-    #             action_btn.configure(bg=original_color)
-            
-    #         action_btn.bind("<Enter>", on_enter)
-    #         action_btn.bind("<Leave>", on_leave)
-            
-    #         # Add a test binding to verify the button receives events
-    #         def on_button_press(event):
-    #             print(f"Mouse pressed on {config['title']} button")
-            
-    #         action_btn.bind("<Button-1>", on_button_press)
-
     # Replace the create_mode_button method with this simplified version:
 
     def create_mode_button(self, parent, config, row, col):
@@ -497,7 +413,7 @@ class GameModeSelection:
             button_state = tk.DISABLED
             button_command = None
         else:
-            button_text += "\n\n>>> Click to Select <<<"
+            # button_text += "\n\n>>> Click to Select <<<"
             button_state = tk.NORMAL
             
             def button_command():
@@ -553,20 +469,20 @@ class GameModeSelection:
 
     # Add this method to the GameModeSelection class for testing:
 
-    def test_simple_button(self):
-        """Create a simple test button to verify click functionality"""
-        test_btn = tk.Button(self.root, text="TEST BUTTON - CLICK ME",
-                            command=lambda: print("TEST BUTTON CLICKED!"),
-                            font=('Arial', 16, 'bold'),
-                            bg='#ff0000', fg='#ffffff',
-                            padx=20, pady=10,
-                            cursor='hand2')
-        test_btn.pack(pady=20)
+    # def test_simple_button(self):
+    #     """Create a simple test button to verify click functionality"""
+    #     test_btn = tk.Button(self.root, text="TEST BUTTON - CLICK ME",
+    #                         command=lambda: print("TEST BUTTON CLICKED!"),
+    #                         font=('Arial', 16, 'bold'),
+    #                         bg='#ff0000', fg='#ffffff',
+    #                         padx=20, pady=10,
+    #                         cursor='hand2')
+    #     test_btn.pack(pady=20)
         
-        def test_click(event):
-            print("TEST BUTTON - Mouse click detected!")
+    #     def test_click(event):
+    #         print("TEST BUTTON - Mouse click detected!")
         
-        test_btn.bind("<Button-1>", test_click)
+    #     test_btn.bind("<Button-1>", test_click)
 
     def lighten_color(self, color):
         """Lighten a hex color for hover effects"""
@@ -634,12 +550,12 @@ class GameModeSelection:
             import tkinter.messagebox as messagebox
             messagebox.showerror("Error", f"Error starting sandbox: {str(e)}")
     
-    def start_challenge_mode(self):
-        """Start the challenge mode (placeholder for future implementation)"""
-        print("🚀 Challenge Mode clicked...")
+    def start_learn_hub_mode(self):
+        """Start the learn hub mode (placeholder for future implementation)"""
+        print("🚀 Learn hub clicked...")
         import tkinter.messagebox as messagebox
         messagebox.showinfo("Coming Soon", 
-                           "🚀 Challenge Mode is coming soon!\n\n"
+                           "🚀 Learn Mode is coming soon!\n\n"
                            "This mode will feature:\n"
                            "• Timed quantum puzzles\n"
                            "• Advanced quantum algorithms\n"
