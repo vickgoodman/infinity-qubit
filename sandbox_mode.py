@@ -70,41 +70,6 @@ class SandboxMode:
         
         # Results area
         self.setup_results_area(main_frame)
-    
-    # def setup_control_panel(self, parent):
-    #     """Setup the control panel for qubits and initial state"""
-    #     control_frame = tk.Frame(parent, bg='#2a2a2a', relief=tk.RAISED, bd=2)
-    #     control_frame.pack(fill=tk.X, pady=(0, 15))
-        
-    #     control_title = tk.Label(control_frame, text="Circuit Configuration",
-    #                             font=('Arial', 14, 'bold'), fg='#00ff88', bg='#2a2a2a')
-    #     control_title.pack(pady=(10, 5))
-        
-    #     # Qubit controls
-    #     qubit_frame = tk.Frame(control_frame, bg='#2a2a2a')
-    #     qubit_frame.pack(pady=10)
-        
-    #     tk.Label(qubit_frame, text="Number of Qubits:", 
-    #             font=('Arial', 12), fg='#ffffff', bg='#2a2a2a').pack(side=tk.LEFT, padx=(20, 5))
-        
-    #     self.qubit_var = tk.IntVar(value=1)
-    #     qubit_spinbox = tk.Spinbox(qubit_frame, from_=1, to=4, textvariable=self.qubit_var,
-    #                               command=self.on_qubit_change, font=('Arial', 12), width=5)
-    #     qubit_spinbox.pack(side=tk.LEFT, padx=5)
-        
-    #     # Initial state selection
-    #     state_frame = tk.Frame(control_frame, bg='#2a2a2a')
-    #     state_frame.pack(pady=10)
-        
-    #     tk.Label(state_frame, text="Initial State:", 
-    #             font=('Arial', 12), fg='#ffffff', bg='#2a2a2a').pack(side=tk.LEFT, padx=(20, 5))
-        
-    #     self.state_var = tk.StringVar(value="|0⟩")
-    #     state_options = ["|0⟩", "|1⟩", "|+⟩", "|-⟩", "|0⟩⊗|0⟩", "|0⟩⊗|1⟩", "|1⟩⊗|0⟩", "|1⟩⊗|1⟩"]
-    #     state_combo = ttk.Combobox(state_frame, textvariable=self.state_var, 
-    #                               values=state_options, state="readonly", font=('Arial', 11))
-    #     state_combo.pack(side=tk.LEFT, padx=5)
-    #     state_combo.bind('<<ComboboxSelected>>', self.on_state_change)
 
     def setup_control_panel(self, parent):
         """Setup the control panel for qubits and initial state"""
@@ -165,7 +130,157 @@ class SandboxMode:
         
         # Available gates
         self.setup_gate_panel(circuit_frame)
-    
+
+    # def setup_gate_panel(self, parent):
+    #     """Setup the gate selection panel"""
+    #     gate_frame = tk.Frame(parent, bg='#2a2a2a')
+    #     gate_frame.pack(fill=tk.X, padx=20, pady=10)
+        
+    #     tk.Label(gate_frame, text="Available Gates:", 
+    #             font=('Arial', 12, 'bold'), fg='#ffffff', bg='#2a2a2a').pack(anchor=tk.W)
+        
+    #     # Gate buttons and qubit selection
+    #     buttons_frame = tk.Frame(gate_frame, bg='#2a2a2a')
+    #     buttons_frame.pack(fill=tk.X, pady=5)
+        
+    #     # Qubit selection for single-qubit gates
+    #     qubit_select_frame = tk.Frame(buttons_frame, bg='#2a2a2a')
+    #     qubit_select_frame.pack(side=tk.LEFT, padx=(0, 20))
+        
+    #     tk.Label(qubit_select_frame, text="Target Qubit:", 
+    #             font=('Arial', 10), fg='#ffffff', bg='#2a2a2a').pack()
+        
+    #     self.target_qubit_var = tk.IntVar(value=0)
+    #     self.target_qubit_combo = ttk.Combobox(qubit_select_frame, textvariable=self.target_qubit_var,
+    #                                         values=list(range(self.num_qubits)), state="readonly", 
+    #                                         font=('Arial', 10), width=5)
+    #     self.target_qubit_combo.pack()
+        
+    #     # Single-qubit gates
+    #     single_gates_frame = tk.Frame(buttons_frame, bg='#2a2a2a')
+    #     single_gates_frame.pack(side=tk.LEFT, padx=10)
+        
+    #     tk.Label(single_gates_frame, text="Single-Qubit Gates:", 
+    #             font=('Arial', 10), fg='#ffffff', bg='#2a2a2a').pack()
+        
+    #     single_gates_buttons = tk.Frame(single_gates_frame, bg='#2a2a2a')
+    #     single_gates_buttons.pack()
+        
+    #     gate_colors = {
+    #         'H': '#ff6b6b', 'X': '#4ecdc4', 'Y': '#45b7d1', 'Z': '#96ceb4',
+    #         'S': '#feca57', 'T': '#ff9ff3'
+    #     }
+        
+    #     single_gates = ['H', 'X', 'Y', 'Z', 'S', 'T']
+    #     for gate in single_gates:
+    #         color = gate_colors.get(gate, '#ffffff')
+    #         btn = tk.Button(single_gates_buttons, text=gate,
+    #                     command=lambda g=gate: self.add_single_gate(g),
+    #                     font=('Arial', 10, 'bold'), bg=color, fg='#000000',
+    #                     width=6, height=1)
+    #         btn.pack(side=tk.LEFT, padx=2, pady=2)
+        
+    #     # Multi-qubit gates section
+    #     multi_gates_frame = tk.Frame(buttons_frame, bg='#2a2a2a')
+    #     multi_gates_frame.pack(side=tk.LEFT, padx=20)
+        
+    #     tk.Label(multi_gates_frame, text="Multi-Qubit Gates:", 
+    #             font=('Arial', 10), fg='#ffffff', bg='#2a2a2a').pack()
+        
+    #     # CNOT controls
+    #     cnot_frame = tk.Frame(multi_gates_frame, bg='#2a2a2a')
+    #     cnot_frame.pack(pady=2)
+        
+    #     tk.Label(cnot_frame, text="CNOT - Control:", font=('Arial', 9), 
+    #             fg='#ffffff', bg='#2a2a2a').pack(side=tk.LEFT)
+        
+    #     self.cnot_control_var = tk.IntVar(value=0)
+    #     cnot_control_combo = ttk.Combobox(cnot_frame, textvariable=self.cnot_control_var,
+    #                                     values=list(range(self.num_qubits)), state="readonly",
+    #                                     font=('Arial', 9), width=3)
+    #     cnot_control_combo.pack(side=tk.LEFT, padx=2)
+        
+    #     tk.Label(cnot_frame, text="Target:", font=('Arial', 9), 
+    #             fg='#ffffff', bg='#2a2a2a').pack(side=tk.LEFT, padx=(5, 0))
+        
+    #     self.cnot_target_var = tk.IntVar(value=1 if self.num_qubits > 1 else 0)
+    #     cnot_target_combo = ttk.Combobox(cnot_frame, textvariable=self.cnot_target_var,
+    #                                     values=list(range(self.num_qubits)), state="readonly",
+    #                                     font=('Arial', 9), width=3)
+    #     cnot_target_combo.pack(side=tk.LEFT, padx=2)
+        
+    #     cnot_btn = tk.Button(cnot_frame, text="CNOT",
+    #                         command=self.add_cnot_gate,
+    #                         font=('Arial', 9, 'bold'), bg='#ffeaa7', fg='#000000',
+    #                         width=6, height=1)
+    #     cnot_btn.pack(side=tk.LEFT, padx=5)
+        
+    #     # CZ controls
+    #     cz_frame = tk.Frame(multi_gates_frame, bg='#2a2a2a')
+    #     cz_frame.pack(pady=2)
+        
+    #     tk.Label(cz_frame, text="CZ - Control:", font=('Arial', 9), 
+    #             fg='#ffffff', bg='#2a2a2a').pack(side=tk.LEFT)
+        
+    #     self.cz_control_var = tk.IntVar(value=0)
+    #     cz_control_combo = ttk.Combobox(cz_frame, textvariable=self.cz_control_var,
+    #                                 values=list(range(self.num_qubits)), state="readonly",
+    #                                 font=('Arial', 9), width=3)
+    #     cz_control_combo.pack(side=tk.LEFT, padx=2)
+        
+    #     tk.Label(cz_frame, text="Target:", font=('Arial', 9), 
+    #             fg='#ffffff', bg='#2a2a2a').pack(side=tk.LEFT, padx=(5, 0))
+        
+    #     self.cz_target_var = tk.IntVar(value=1 if self.num_qubits > 1 else 0)
+    #     cz_target_combo = ttk.Combobox(cz_frame, textvariable=self.cz_target_var,
+    #                                 values=list(range(self.num_qubits)), state="readonly",
+    #                                 font=('Arial', 9), width=3)
+    #     cz_target_combo.pack(side=tk.LEFT, padx=2)
+        
+    #     cz_btn = tk.Button(cz_frame, text="CZ",
+    #                     command=self.add_cz_gate,
+    #                     font=('Arial', 9, 'bold'), bg='#a29bfe', fg='#000000',
+    #                     width=6, height=1)
+    #     cz_btn.pack(side=tk.LEFT, padx=5)
+        
+    #     # Toffoli controls (if 3+ qubits)
+    #     if self.num_qubits >= 3:
+    #         toffoli_frame = tk.Frame(multi_gates_frame, bg='#2a2a2a')
+    #         toffoli_frame.pack(pady=2)
+            
+    #         tk.Label(toffoli_frame, text="Toffoli - C1:", font=('Arial', 9), 
+    #                 fg='#ffffff', bg='#2a2a2a').pack(side=tk.LEFT)
+            
+    #         self.toffoli_c1_var = tk.IntVar(value=0)
+    #         toffoli_c1_combo = ttk.Combobox(toffoli_frame, textvariable=self.toffoli_c1_var,
+    #                                     values=list(range(self.num_qubits)), state="readonly",
+    #                                     font=('Arial', 9), width=3)
+    #         toffoli_c1_combo.pack(side=tk.LEFT, padx=2)
+            
+    #         tk.Label(toffoli_frame, text="C2:", font=('Arial', 9), 
+    #                 fg='#ffffff', bg='#2a2a2a').pack(side=tk.LEFT, padx=(5, 0))
+            
+    #         self.toffoli_c2_var = tk.IntVar(value=1)
+    #         toffoli_c2_combo = ttk.Combobox(toffoli_frame, textvariable=self.toffoli_c2_var,
+    #                                     values=list(range(self.num_qubits)), state="readonly",
+    #                                     font=('Arial', 9), width=3)
+    #         toffoli_c2_combo.pack(side=tk.LEFT, padx=2)
+            
+    #         tk.Label(toffoli_frame, text="T:", font=('Arial', 9), 
+    #                 fg='#ffffff', bg='#2a2a2a').pack(side=tk.LEFT, padx=(5, 0))
+            
+    #         self.toffoli_target_var = tk.IntVar(value=2)
+    #         toffoli_target_combo = ttk.Combobox(toffoli_frame, textvariable=self.toffoli_target_var,
+    #                                         values=list(range(self.num_qubits)), state="readonly",
+    #                                         font=('Arial', 9), width=3)
+    #         toffoli_target_combo.pack(side=tk.LEFT, padx=2)
+            
+    #         toffoli_btn = tk.Button(toffoli_frame, text="Toffoli",
+    #                             command=self.add_toffoli_gate,
+    #                             font=('Arial', 9, 'bold'), bg='#fd79a8', fg='#000000',
+    #                             width=6, height=1)
+    #         toffoli_btn.pack(side=tk.LEFT, padx=5)
+
     def setup_gate_panel(self, parent):
         """Setup the gate selection panel"""
         gate_frame = tk.Frame(parent, bg='#2a2a2a')
@@ -174,24 +289,241 @@ class SandboxMode:
         tk.Label(gate_frame, text="Available Gates:", 
                 font=('Arial', 12, 'bold'), fg='#ffffff', bg='#2a2a2a').pack(anchor=tk.W)
         
-        # Gate buttons
+        # Gate buttons and qubit selection
         buttons_frame = tk.Frame(gate_frame, bg='#2a2a2a')
         buttons_frame.pack(fill=tk.X, pady=5)
         
+        # Qubit selection for single-qubit gates
+        qubit_select_frame = tk.Frame(buttons_frame, bg='#2a2a2a')
+        qubit_select_frame.pack(side=tk.LEFT, padx=(0, 20))
+        
+        tk.Label(qubit_select_frame, text="Target Qubit:", 
+                font=('Arial', 10), fg='#ffffff', bg='#2a2a2a').pack()
+        
+        self.target_qubit_var = tk.IntVar(value=0)
+        self.target_qubit_combo = ttk.Combobox(qubit_select_frame, textvariable=self.target_qubit_var,
+                                            values=list(range(self.num_qubits)), state="readonly", 
+                                            font=('Arial', 10), width=5)
+        self.target_qubit_combo.pack()
+        
+        # Single-qubit gates
+        single_gates_frame = tk.Frame(buttons_frame, bg='#2a2a2a')
+        single_gates_frame.pack(side=tk.LEFT, padx=10)
+        
+        tk.Label(single_gates_frame, text="Single-Qubit Gates:", 
+                font=('Arial', 10), fg='#ffffff', bg='#2a2a2a').pack()
+        
+        single_gates_buttons = tk.Frame(single_gates_frame, bg='#2a2a2a')
+        single_gates_buttons.pack()
+        
         gate_colors = {
             'H': '#ff6b6b', 'X': '#4ecdc4', 'Y': '#45b7d1', 'Z': '#96ceb4',
-            'S': '#feca57', 'T': '#ff9ff3', 'CNOT': '#ffeaa7', 'CZ': '#a29bfe',
-            'Toffoli': '#fd79a8'
+            'S': '#feca57', 'T': '#ff9ff3'
         }
         
-        for gate in self.available_gates:
+        single_gates = ['H', 'X', 'Y', 'Z', 'S', 'T']
+        for gate in single_gates:
             color = gate_colors.get(gate, '#ffffff')
-            btn = tk.Button(buttons_frame, text=gate,
-                           command=lambda g=gate: self.add_gate(g),
-                           font=('Arial', 10, 'bold'), bg=color, fg='#000000',
-                           width=8, height=1)
-            btn.pack(side=tk.LEFT, padx=3, pady=2)
+            btn = tk.Button(single_gates_buttons, text=gate,
+                        command=lambda g=gate: self.add_single_gate(g),
+                        font=('Arial', 10, 'bold'), bg=color, fg='#000000',
+                        width=6, height=1)
+            btn.pack(side=tk.LEFT, padx=2, pady=2)
+        
+        # Multi-qubit gates section
+        multi_gates_frame = tk.Frame(buttons_frame, bg='#2a2a2a')
+        multi_gates_frame.pack(side=tk.LEFT, padx=20)
+        
+        tk.Label(multi_gates_frame, text="Multi-Qubit Gates:", 
+                font=('Arial', 10), fg='#ffffff', bg='#2a2a2a').pack()
+        
+        # CNOT controls
+        cnot_frame = tk.Frame(multi_gates_frame, bg='#2a2a2a')
+        cnot_frame.pack(pady=2)
+        
+        tk.Label(cnot_frame, text="CNOT - Control:", font=('Arial', 9), 
+                fg='#ffffff', bg='#2a2a2a').pack(side=tk.LEFT)
+        
+        self.cnot_control_var = tk.IntVar(value=0)
+        self.cnot_control_combo = ttk.Combobox(cnot_frame, textvariable=self.cnot_control_var,
+                                            values=list(range(self.num_qubits)), state="readonly",
+                                            font=('Arial', 9), width=3)
+        self.cnot_control_combo.pack(side=tk.LEFT, padx=2)
+        
+        tk.Label(cnot_frame, text="Target:", font=('Arial', 9), 
+                fg='#ffffff', bg='#2a2a2a').pack(side=tk.LEFT, padx=(5, 0))
+        
+        self.cnot_target_var = tk.IntVar(value=1 if self.num_qubits > 1 else 0)
+        self.cnot_target_combo = ttk.Combobox(cnot_frame, textvariable=self.cnot_target_var,
+                                            values=list(range(self.num_qubits)), state="readonly",
+                                            font=('Arial', 9), width=3)
+        self.cnot_target_combo.pack(side=tk.LEFT, padx=2)
+        
+        cnot_btn = tk.Button(cnot_frame, text="CNOT",
+                            command=self.add_cnot_gate,
+                            font=('Arial', 9, 'bold'), bg='#ffeaa7', fg='#000000',
+                            width=6, height=1)
+        cnot_btn.pack(side=tk.LEFT, padx=5)
+        
+        # CZ controls
+        cz_frame = tk.Frame(multi_gates_frame, bg='#2a2a2a')
+        cz_frame.pack(pady=2)
+        
+        tk.Label(cz_frame, text="CZ - Control:", font=('Arial', 9), 
+                fg='#ffffff', bg='#2a2a2a').pack(side=tk.LEFT)
+        
+        self.cz_control_var = tk.IntVar(value=0)
+        self.cz_control_combo = ttk.Combobox(cz_frame, textvariable=self.cz_control_var,
+                                            values=list(range(self.num_qubits)), state="readonly",
+                                            font=('Arial', 9), width=3)
+        self.cz_control_combo.pack(side=tk.LEFT, padx=2)
+        
+        tk.Label(cz_frame, text="Target:", font=('Arial', 9), 
+                fg='#ffffff', bg='#2a2a2a').pack(side=tk.LEFT, padx=(5, 0))
+        
+        self.cz_target_var = tk.IntVar(value=1 if self.num_qubits > 1 else 0)
+        self.cz_target_combo = ttk.Combobox(cz_frame, textvariable=self.cz_target_var,
+                                        values=list(range(self.num_qubits)), state="readonly",
+                                        font=('Arial', 9), width=3)
+        self.cz_target_combo.pack(side=tk.LEFT, padx=2)
+        
+        cz_btn = tk.Button(cz_frame, text="CZ",
+                        command=self.add_cz_gate,
+                        font=('Arial', 9, 'bold'), bg='#a29bfe', fg='#000000',
+                        width=6, height=1)
+        cz_btn.pack(side=tk.LEFT, padx=5)
+        
+        # Toffoli controls (if 3+ qubits)
+        if self.num_qubits >= 3:
+            toffoli_frame = tk.Frame(multi_gates_frame, bg='#2a2a2a')
+            toffoli_frame.pack(pady=2)
+            
+            tk.Label(toffoli_frame, text="Toffoli - C1:", font=('Arial', 9), 
+                    fg='#ffffff', bg='#2a2a2a').pack(side=tk.LEFT)
+            
+            self.toffoli_c1_var = tk.IntVar(value=0)
+            self.toffoli_c1_combo = ttk.Combobox(toffoli_frame, textvariable=self.toffoli_c1_var,
+                                                values=list(range(self.num_qubits)), state="readonly",
+                                                font=('Arial', 9), width=3)
+            self.toffoli_c1_combo.pack(side=tk.LEFT, padx=2)
+            
+            tk.Label(toffoli_frame, text="C2:", font=('Arial', 9), 
+                    fg='#ffffff', bg='#2a2a2a').pack(side=tk.LEFT, padx=(5, 0))
+            
+            self.toffoli_c2_var = tk.IntVar(value=1)
+            self.toffoli_c2_combo = ttk.Combobox(toffoli_frame, textvariable=self.toffoli_c2_var,
+                                                values=list(range(self.num_qubits)), state="readonly",
+                                                font=('Arial', 9), width=3)
+            self.toffoli_c2_combo.pack(side=tk.LEFT, padx=2)
+            
+            tk.Label(toffoli_frame, text="T:", font=('Arial', 9), 
+                    fg='#ffffff', bg='#2a2a2a').pack(side=tk.LEFT, padx=(5, 0))
+            
+            self.toffoli_target_var = tk.IntVar(value=2)
+            self.toffoli_target_combo = ttk.Combobox(toffoli_frame, textvariable=self.toffoli_target_var,
+                                                    values=list(range(self.num_qubits)), state="readonly",
+                                                    font=('Arial', 9), width=3)
+            self.toffoli_target_combo.pack(side=tk.LEFT, padx=2)
+            
+            toffoli_btn = tk.Button(toffoli_frame, text="Toffoli",
+                                command=self.add_toffoli_gate,
+                                font=('Arial', 9, 'bold'), bg='#fd79a8', fg='#000000',
+                                width=6, height=1)
+            toffoli_btn.pack(side=tk.LEFT, padx=5)
+
+
+    def add_single_gate(self, gate):
+        """Add a single-qubit gate to the selected qubit"""
+        target_qubit = self.target_qubit_var.get()
+        
+        if target_qubit >= self.num_qubits:
+            messagebox.showwarning("Warning", "Invalid target qubit selected")
+            return
+        
+        self.placed_gates.append((gate, [target_qubit]))
+        self.update_circuit_display()
+        self.play_gate_sound()
     
+    def add_cnot_gate(self):
+        """Add a CNOT gate"""
+        if self.num_qubits < 2:
+            messagebox.showwarning("Warning", "CNOT gate requires at least 2 qubits")
+            return
+        
+        control = self.cnot_control_var.get()
+        target = self.cnot_target_var.get()
+        
+        if control == target:
+            messagebox.showwarning("Warning", "Control and target qubits must be different")
+            return
+        
+        if control >= self.num_qubits or target >= self.num_qubits:
+            messagebox.showwarning("Warning", "Invalid qubit selection")
+            return
+        
+        self.placed_gates.append(('CNOT', [control, target]))
+        self.update_circuit_display()
+        self.play_gate_sound()
+
+    def add_cz_gate(self):
+        """Add a CZ gate"""
+        if self.num_qubits < 2:
+            messagebox.showwarning("Warning", "CZ gate requires at least 2 qubits")
+            return
+        
+        control = self.cz_control_var.get()
+        target = self.cz_target_var.get()
+        
+        if control == target:
+            messagebox.showwarning("Warning", "Control and target qubits must be different")
+            return
+        
+        if control >= self.num_qubits or target >= self.num_qubits:
+            messagebox.showwarning("Warning", "Invalid qubit selection")
+            return
+        
+        self.placed_gates.append(('CZ', [control, target]))
+        self.update_circuit_display()
+        self.play_gate_sound()
+
+    def add_toffoli_gate(self):
+        """Add a Toffoli gate"""
+        if self.num_qubits < 3:
+            messagebox.showwarning("Warning", "Toffoli gate requires at least 3 qubits")
+            return
+        
+        c1 = self.toffoli_c1_var.get()
+        c2 = self.toffoli_c2_var.get()
+        target = self.toffoli_target_var.get()
+        
+        if len(set([c1, c2, target])) != 3:
+            messagebox.showwarning("Warning", "All three qubits must be different")
+            return
+        
+        if c1 >= self.num_qubits or c2 >= self.num_qubits or target >= self.num_qubits:
+            messagebox.showwarning("Warning", "Invalid qubit selection")
+            return
+        
+        self.placed_gates.append(('Toffoli', [c1, c2, target]))
+        self.update_circuit_display()
+        self.play_gate_sound()
+
+    def play_gate_sound(self):
+        """Play sound when gate is added"""
+        if self.sound_enabled:
+            try:
+                frequency = 440
+                duration = 0.1
+                sample_rate = 22050
+                frames = int(duration * sample_rate)
+                arr = np.sin(2 * np.pi * frequency * np.linspace(0, duration, frames))
+                arr = (arr * 16383).astype(np.int16)
+                sound = pygame.sndarray.make_sound(arr)
+                sound.set_volume(0.3)
+                sound.play()
+            except:
+                pass
+
     def setup_action_buttons(self, parent):
         """Setup action buttons"""
         action_frame = tk.Frame(parent, bg='#1a1a1a')
@@ -281,30 +613,11 @@ class SandboxMode:
         if self.placed_gates:
             self.placed_gates.pop()
             self.update_circuit_display()
-    
-    # def on_qubit_change(self):
-    #     """Handle change in number of qubits"""
-    #     self.num_qubits = self.qubit_var.get()
-    #     self.placed_gates = []  # Clear gates when changing qubit count
-    #     self.update_circuit_display()
-        
-    #     # Update available initial states based on qubit count
-    #     if self.num_qubits == 1:
-    #         states = ["|0⟩", "|1⟩", "|+⟩", "|-⟩"]
-    #     elif self.num_qubits == 2:
-    #         states = ["|00⟩", "|01⟩", "|10⟩", "|11⟩", "|++⟩"]
-    #     else:
-    #         states = ["|000⟩", "|001⟩", "|010⟩", "|011⟩", "|100⟩", "|101⟩", "|110⟩", "|111⟩"]
-        
-    #     # Update state combobox (you'd need to store a reference to it)
-    #     # For now, just reset to |0⟩
-    #     self.state_var.set(states[0])
 
     def on_qubit_change(self):
         """Handle change in number of qubits"""
         self.num_qubits = self.qubit_var.get()
         self.placed_gates = []  # Clear gates when changing qubit count
-        self.update_circuit_display()
         
         # Update available initial states based on qubit count
         if self.num_qubits == 1:
@@ -315,20 +628,150 @@ class SandboxMode:
             states = ["|000⟩", "|001⟩", "|010⟩", "|011⟩", "|100⟩", "|101⟩", "|110⟩", "|111⟩"]
         elif self.num_qubits == 4:
             states = ["|0000⟩", "|0001⟩", "|0010⟩", "|0011⟩", "|0100⟩", "|0101⟩", "|0110⟩", "|0111⟩",
-                    "|1000⟩", "|1001⟩", "|1010⟩", "|1011⟩", "|1100⟩", "|1101⟩", "|1110⟩", "|1111⟩"]
+                "|1000⟩", "|1001⟩", "|1010⟩", "|1011⟩", "|1100⟩", "|1101⟩", "|1110⟩", "|1111⟩"]
         else:
-            # Fallback for any other number of qubits
             states = ["|" + "0" * self.num_qubits + "⟩"]
         
-        # Update the combobox values
-        # We need to get a reference to the combobox to update it
-        # Since we don't have a direct reference, let's rebuild the control panel
         self.update_state_combobox(states)
-        
-        # Set default state
         self.state_var.set(states[0])
         self.initial_state = states[0]
-    
+        
+        # Update the qubit selection dropdowns
+        self.update_qubit_selections()
+        
+        self.update_circuit_display()
+
+    # def update_qubit_selections(self):
+    #     """Update all qubit selection dropdowns when number of qubits changes"""
+    #     qubit_range = list(range(self.num_qubits))
+        
+    #     # Update target qubit combo
+    #     if hasattr(self, 'target_qubit_combo'):
+    #         self.target_qubit_combo['values'] = qubit_range
+    #         if self.target_qubit_var.get() >= self.num_qubits:
+    #             self.target_qubit_var.set(0)
+        
+    #     # Update CNOT controls
+    #     if hasattr(self, 'cnot_control_var'):
+    #         # Find and update CNOT dropdowns
+    #         self.update_combo_values('cnot_control', qubit_range)
+    #         self.update_combo_values('cnot_target', qubit_range)
+            
+    #         # Set default values if current ones are invalid
+    #         if self.cnot_control_var.get() >= self.num_qubits:
+    #             self.cnot_control_var.set(0)
+    #         if self.cnot_target_var.get() >= self.num_qubits:
+    #             self.cnot_target_var.set(1 if self.num_qubits > 1 else 0)
+        
+    #     # Update CZ controls
+    #     if hasattr(self, 'cz_control_var'):
+    #         self.update_combo_values('cz_control', qubit_range)
+    #         self.update_combo_values('cz_target', qubit_range)
+            
+    #         if self.cz_control_var.get() >= self.num_qubits:
+    #             self.cz_control_var.set(0)
+    #         if self.cz_target_var.get() >= self.num_qubits:
+    #             self.cz_target_var.set(1 if self.num_qubits > 1 else 0)
+        
+    #     # Update Toffoli controls
+    #     if hasattr(self, 'toffoli_c1_var'):
+    #         self.update_combo_values('toffoli_c1', qubit_range)
+    #         self.update_combo_values('toffoli_c2', qubit_range)
+    #         self.update_combo_values('toffoli_target', qubit_range)
+            
+    #         if self.toffoli_c1_var.get() >= self.num_qubits:
+    #             self.toffoli_c1_var.set(0)
+    #         if self.toffoli_c2_var.get() >= self.num_qubits:
+    #             self.toffoli_c2_var.set(1 if self.num_qubits > 1 else 0)
+    #         if self.toffoli_target_var.get() >= self.num_qubits:
+    #             self.toffoli_target_var.set(2 if self.num_qubits > 2 else 0)
+        
+    #     # Handle Toffoli visibility for 3+ qubits
+    #     self.update_toffoli_visibility()
+
+    def update_qubit_selections(self):
+        """Update all qubit selection dropdowns when number of qubits changes"""
+        qubit_range = list(range(self.num_qubits))
+        
+        # Update target qubit combo
+        if hasattr(self, 'target_qubit_combo'):
+            self.target_qubit_combo['values'] = qubit_range
+            if self.target_qubit_var.get() >= self.num_qubits:
+                self.target_qubit_var.set(0)
+        
+        # Update CNOT controls directly using stored references
+        if hasattr(self, 'cnot_control_combo'):
+            self.cnot_control_combo['values'] = qubit_range
+            if self.cnot_control_var.get() >= self.num_qubits:
+                self.cnot_control_var.set(0)
+        
+        if hasattr(self, 'cnot_target_combo'):
+            self.cnot_target_combo['values'] = qubit_range
+            if self.cnot_target_var.get() >= self.num_qubits:
+                self.cnot_target_var.set(1 if self.num_qubits > 1 else 0)
+        
+        # Update CZ controls directly using stored references
+        if hasattr(self, 'cz_control_combo'):
+            self.cz_control_combo['values'] = qubit_range
+            if self.cz_control_var.get() >= self.num_qubits:
+                self.cz_control_var.set(0)
+        
+        if hasattr(self, 'cz_target_combo'):
+            self.cz_target_combo['values'] = qubit_range
+            if self.cz_target_var.get() >= self.num_qubits:
+                self.cz_target_var.set(1 if self.num_qubits > 1 else 0)
+        
+        # Update Toffoli controls directly using stored references
+        if hasattr(self, 'toffoli_c1_combo'):
+            self.toffoli_c1_combo['values'] = qubit_range
+            if self.toffoli_c1_var.get() >= self.num_qubits:
+                self.toffoli_c1_var.set(0)
+        
+        if hasattr(self, 'toffoli_c2_combo'):
+            self.toffoli_c2_combo['values'] = qubit_range
+            if self.toffoli_c2_var.get() >= self.num_qubits:
+                self.toffoli_c2_var.set(1 if self.num_qubits > 1 else 0)
+        
+        if hasattr(self, 'toffoli_target_combo'):
+            self.toffoli_target_combo['values'] = qubit_range
+            if self.toffoli_target_var.get() >= self.num_qubits:
+                self.toffoli_target_var.set(2 if self.num_qubits > 2 else 0)
+        
+        # Handle Toffoli visibility for 3+ qubits
+        self.update_toffoli_visibility()
+        
+    # def update_combo_values(self, combo_name, values):
+    #     """Helper method to update combobox values"""
+    #     # Find the combobox widget by searching through the widget tree
+    #     combo_widget = self.find_combo_widget(combo_name)
+    #     if combo_widget:
+    #         combo_widget['values'] = values
+
+    def update_toffoli_visibility(self):
+        """Show/hide Toffoli controls based on number of qubits"""
+        # This is a simplified approach - in a production app you might want
+        # to rebuild the entire gate panel, but this preserves the existing widgets
+        pass
+
+    # def find_combo_widget(self, combo_name):
+    #     """Find a combobox widget by searching through the widget tree"""
+    #     def search_widget(widget):
+    #         if hasattr(widget, 'winfo_children'):
+    #             for child in widget.winfo_children():
+    #                 # Check if this is a combobox with the right variable
+    #                 if isinstance(child, ttk.Combobox):
+    #                     var = child.cget('textvariable')
+    #                     if var:
+    #                         var_name = str(var).split('.')[-1]  # Get variable name
+    #                         if combo_name in var_name:
+    #                             return child
+    #                 result = search_widget(child)
+    #                 if result:
+    #                     return result
+    #         return None
+        
+    #     return search_widget(self.root)
+
     def update_state_combobox(self, states):
         """Update the state combobox with new values"""
         # Find and update the combobox
@@ -461,29 +904,6 @@ class SandboxMode:
         except Exception as e:
             self.results_text.delete(1.0, tk.END)
             self.results_text.insert(tk.END, f"Error executing circuit: {str(e)}\n")
-    
-    # def set_initial_state(self, qc):
-    #     """Set the initial state of the quantum circuit"""
-    #     state = self.initial_state
-        
-    #     if state == "|1⟩" and self.num_qubits >= 1:
-    #         qc.x(0)
-    #     elif state == "|+⟩" and self.num_qubits >= 1:
-    #         qc.h(0)
-    #     elif state == "|-⟩" and self.num_qubits >= 1:
-    #         qc.x(0)
-    #         qc.h(0)
-    #     elif state == "|01⟩" and self.num_qubits >= 2:
-    #         qc.x(1)
-    #     elif state == "|10⟩" and self.num_qubits >= 2:
-    #         qc.x(0)
-    #     elif state == "|11⟩" and self.num_qubits >= 2:
-    #         qc.x(0)
-    #         qc.x(1)
-    #     elif state == "|++⟩" and self.num_qubits >= 2:
-    #         qc.h(0)
-    #         qc.h(1)
-    #     # Add more initial states as needed
 
     def set_initial_state(self, qc):
         """Set the initial state of the quantum circuit"""
