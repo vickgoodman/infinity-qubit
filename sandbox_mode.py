@@ -1,9 +1,9 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
 import numpy as np
-from qiskit import QuantumCircuit
-from qiskit.quantum_info import Statevector
-import pygame
+from qiskit import QuantumCircuit # type: ignore
+from qiskit.quantum_info import Statevector # type: ignore
+import pygame # type: ignore
 
 class SandboxMode:
     def __init__(self, root):
@@ -71,6 +71,41 @@ class SandboxMode:
         # Results area
         self.setup_results_area(main_frame)
     
+    # def setup_control_panel(self, parent):
+    #     """Setup the control panel for qubits and initial state"""
+    #     control_frame = tk.Frame(parent, bg='#2a2a2a', relief=tk.RAISED, bd=2)
+    #     control_frame.pack(fill=tk.X, pady=(0, 15))
+        
+    #     control_title = tk.Label(control_frame, text="Circuit Configuration",
+    #                             font=('Arial', 14, 'bold'), fg='#00ff88', bg='#2a2a2a')
+    #     control_title.pack(pady=(10, 5))
+        
+    #     # Qubit controls
+    #     qubit_frame = tk.Frame(control_frame, bg='#2a2a2a')
+    #     qubit_frame.pack(pady=10)
+        
+    #     tk.Label(qubit_frame, text="Number of Qubits:", 
+    #             font=('Arial', 12), fg='#ffffff', bg='#2a2a2a').pack(side=tk.LEFT, padx=(20, 5))
+        
+    #     self.qubit_var = tk.IntVar(value=1)
+    #     qubit_spinbox = tk.Spinbox(qubit_frame, from_=1, to=4, textvariable=self.qubit_var,
+    #                               command=self.on_qubit_change, font=('Arial', 12), width=5)
+    #     qubit_spinbox.pack(side=tk.LEFT, padx=5)
+        
+    #     # Initial state selection
+    #     state_frame = tk.Frame(control_frame, bg='#2a2a2a')
+    #     state_frame.pack(pady=10)
+        
+    #     tk.Label(state_frame, text="Initial State:", 
+    #             font=('Arial', 12), fg='#ffffff', bg='#2a2a2a').pack(side=tk.LEFT, padx=(20, 5))
+        
+    #     self.state_var = tk.StringVar(value="|0⟩")
+    #     state_options = ["|0⟩", "|1⟩", "|+⟩", "|-⟩", "|0⟩⊗|0⟩", "|0⟩⊗|1⟩", "|1⟩⊗|0⟩", "|1⟩⊗|1⟩"]
+    #     state_combo = ttk.Combobox(state_frame, textvariable=self.state_var, 
+    #                               values=state_options, state="readonly", font=('Arial', 11))
+    #     state_combo.pack(side=tk.LEFT, padx=5)
+    #     state_combo.bind('<<ComboboxSelected>>', self.on_state_change)
+
     def setup_control_panel(self, parent):
         """Setup the control panel for qubits and initial state"""
         control_frame = tk.Frame(parent, bg='#2a2a2a', relief=tk.RAISED, bd=2)
@@ -89,7 +124,7 @@ class SandboxMode:
         
         self.qubit_var = tk.IntVar(value=1)
         qubit_spinbox = tk.Spinbox(qubit_frame, from_=1, to=4, textvariable=self.qubit_var,
-                                  command=self.on_qubit_change, font=('Arial', 12), width=5)
+                                command=self.on_qubit_change, font=('Arial', 12), width=5)
         qubit_spinbox.pack(side=tk.LEFT, padx=5)
         
         # Initial state selection
@@ -100,11 +135,13 @@ class SandboxMode:
                 font=('Arial', 12), fg='#ffffff', bg='#2a2a2a').pack(side=tk.LEFT, padx=(20, 5))
         
         self.state_var = tk.StringVar(value="|0⟩")
-        state_options = ["|0⟩", "|1⟩", "|+⟩", "|-⟩", "|0⟩⊗|0⟩", "|0⟩⊗|1⟩", "|1⟩⊗|0⟩", "|1⟩⊗|1⟩"]
-        state_combo = ttk.Combobox(state_frame, textvariable=self.state_var, 
-                                  values=state_options, state="readonly", font=('Arial', 11))
-        state_combo.pack(side=tk.LEFT, padx=5)
-        state_combo.bind('<<ComboboxSelected>>', self.on_state_change)
+        state_options = ["|0⟩", "|1⟩", "|+⟩", "|-⟩"]
+        
+        # Store reference to combobox so we can update it later
+        self.state_combo = ttk.Combobox(state_frame, textvariable=self.state_var, 
+                                    values=state_options, state="readonly", font=('Arial', 11))
+        self.state_combo.pack(side=tk.LEFT, padx=5)
+        self.state_combo.bind('<<ComboboxSelected>>', self.on_state_change)
     
     def setup_circuit_area(self, parent):
         """Setup the circuit visualization area"""
@@ -245,6 +282,24 @@ class SandboxMode:
             self.placed_gates.pop()
             self.update_circuit_display()
     
+    # def on_qubit_change(self):
+    #     """Handle change in number of qubits"""
+    #     self.num_qubits = self.qubit_var.get()
+    #     self.placed_gates = []  # Clear gates when changing qubit count
+    #     self.update_circuit_display()
+        
+    #     # Update available initial states based on qubit count
+    #     if self.num_qubits == 1:
+    #         states = ["|0⟩", "|1⟩", "|+⟩", "|-⟩"]
+    #     elif self.num_qubits == 2:
+    #         states = ["|00⟩", "|01⟩", "|10⟩", "|11⟩", "|++⟩"]
+    #     else:
+    #         states = ["|000⟩", "|001⟩", "|010⟩", "|011⟩", "|100⟩", "|101⟩", "|110⟩", "|111⟩"]
+        
+    #     # Update state combobox (you'd need to store a reference to it)
+    #     # For now, just reset to |0⟩
+    #     self.state_var.set(states[0])
+
     def on_qubit_change(self):
         """Handle change in number of qubits"""
         self.num_qubits = self.qubit_var.get()
@@ -256,13 +311,32 @@ class SandboxMode:
             states = ["|0⟩", "|1⟩", "|+⟩", "|-⟩"]
         elif self.num_qubits == 2:
             states = ["|00⟩", "|01⟩", "|10⟩", "|11⟩", "|++⟩"]
-        else:
+        elif self.num_qubits == 3:
             states = ["|000⟩", "|001⟩", "|010⟩", "|011⟩", "|100⟩", "|101⟩", "|110⟩", "|111⟩"]
+        elif self.num_qubits == 4:
+            states = ["|0000⟩", "|0001⟩", "|0010⟩", "|0011⟩", "|0100⟩", "|0101⟩", "|0110⟩", "|0111⟩",
+                    "|1000⟩", "|1001⟩", "|1010⟩", "|1011⟩", "|1100⟩", "|1101⟩", "|1110⟩", "|1111⟩"]
+        else:
+            # Fallback for any other number of qubits
+            states = ["|" + "0" * self.num_qubits + "⟩"]
         
-        # Update state combobox (you'd need to store a reference to it)
-        # For now, just reset to |0⟩
+        # Update the combobox values
+        # We need to get a reference to the combobox to update it
+        # Since we don't have a direct reference, let's rebuild the control panel
+        self.update_state_combobox(states)
+        
+        # Set default state
         self.state_var.set(states[0])
+        self.initial_state = states[0]
     
+    def update_state_combobox(self, states):
+        """Update the state combobox with new values"""
+        # Find and update the combobox
+        # This is a bit tricky since we need to access the widget
+        # Let's store a reference to the combobox in setup_control_panel
+        if hasattr(self, 'state_combo'):
+            self.state_combo['values'] = states
+
     def on_state_change(self, event=None):
         """Handle change in initial state"""
         self.initial_state = self.state_var.get()
@@ -388,6 +462,29 @@ class SandboxMode:
             self.results_text.delete(1.0, tk.END)
             self.results_text.insert(tk.END, f"Error executing circuit: {str(e)}\n")
     
+    # def set_initial_state(self, qc):
+    #     """Set the initial state of the quantum circuit"""
+    #     state = self.initial_state
+        
+    #     if state == "|1⟩" and self.num_qubits >= 1:
+    #         qc.x(0)
+    #     elif state == "|+⟩" and self.num_qubits >= 1:
+    #         qc.h(0)
+    #     elif state == "|-⟩" and self.num_qubits >= 1:
+    #         qc.x(0)
+    #         qc.h(0)
+    #     elif state == "|01⟩" and self.num_qubits >= 2:
+    #         qc.x(1)
+    #     elif state == "|10⟩" and self.num_qubits >= 2:
+    #         qc.x(0)
+    #     elif state == "|11⟩" and self.num_qubits >= 2:
+    #         qc.x(0)
+    #         qc.x(1)
+    #     elif state == "|++⟩" and self.num_qubits >= 2:
+    #         qc.h(0)
+    #         qc.h(1)
+    #     # Add more initial states as needed
+
     def set_initial_state(self, qc):
         """Set the initial state of the quantum circuit"""
         state = self.initial_state
@@ -409,7 +506,16 @@ class SandboxMode:
         elif state == "|++⟩" and self.num_qubits >= 2:
             qc.h(0)
             qc.h(1)
-        # Add more initial states as needed
+        else:
+            # Handle arbitrary binary states like |0000⟩, |0001⟩, etc.
+            # Extract the binary string from the ket notation
+            if state.startswith("|") and state.endswith("⟩"):
+                binary_str = state[1:-1]  # Remove |⟩ brackets
+                
+                # Apply X gates for each '1' in the binary string
+                for i, bit in enumerate(reversed(binary_str)):
+                    if bit == '1' and i < self.num_qubits:
+                        qc.x(i)
     
     def display_results(self, state_vector):
         """Display the quantum state results"""
