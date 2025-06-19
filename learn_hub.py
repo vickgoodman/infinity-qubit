@@ -62,9 +62,13 @@ class LearnHub:
         # Create animated header
         self.create_animated_header(content_frame)
 
-        # Create notebook for tabs
-        self.notebook = ttk.Notebook(content_frame)
-        self.notebook.pack(fill=tk.BOTH, expand=True, pady=(20, 0))
+        # Create a container to center the notebook
+        notebook_container = tk.Frame(content_frame, bg='#1a1a1a')
+        notebook_container.pack(fill=tk.BOTH, expand=True, pady=(20, 0))
+
+        # Create notebook for tabs - centered
+        self.notebook = ttk.Notebook(notebook_container)
+        self.notebook.pack(expand=True, fill=tk.BOTH)
 
         # Apply enhanced styling
         self.style_notebook()
@@ -241,24 +245,27 @@ class LearnHub:
 
         # Enhanced notebook styling - Fixed the focuscolor issue
         style.configure('TNotebook',
-                       background='#1a1a1a',
-                       borderwidth=0,
-                       tabmargins=[2, 5, 2, 0])
+                    background='#1a1a1a',
+                    borderwidth=0,
+                    tabmargins=[2, 5, 2, 0])
 
         style.configure('TNotebook.Tab',
-                       background='#2a2a2a',
-                       foreground='#ffffff',
-                       padding=[25, 15],
-                       borderwidth=0,
-                       font=('Arial', 11, 'bold'))
+                    background='#2a2a2a',
+                    foreground='#ffffff',
+                    padding=[25, 15],
+                    borderwidth=0,
+                    font=('Arial', 11, 'bold'))
 
         style.map('TNotebook.Tab',
-                 background=[('selected', '#00ff88'),
+                background=[('selected', '#00ff88'),
                             ('active', '#4ecdc4')],
-                 foreground=[('selected', '#000000'),
+                foreground=[('selected', '#000000'),
                             ('active', '#ffffff')])
 
         style.configure('TFrame', background='#1a1a1a')
+
+        # Center the tabs by configuring tab positioning
+        style.configure('TNotebook', tabposition='n')
 
     def create_concepts_tab(self):
         """Create the enhanced basic concepts tab"""
@@ -349,7 +356,7 @@ complex problems in science, technology, and beyond. The future is quantum! 🌟
         concepts_text.config(state=tk.DISABLED)
 
     def create_gates_tab(self):
-        """Create the enhanced quantum gates tab"""
+        """Create the enhanced quantum gates tab with all gates in one horizontal line"""
         gates_frame = ttk.Frame(self.notebook)
         self.notebook.add(gates_frame, text="⚡ Quantum Gates")
 
@@ -357,12 +364,13 @@ complex problems in science, technology, and beyond. The future is quantum! 🌟
         main_container = tk.Frame(gates_frame, bg='#1a1a1a')
         main_container.pack(fill=tk.BOTH, expand=True, padx=25, pady=20)
 
-        # Create a canvas for scrolling with enhanced styling
+        # Create a canvas for horizontal scrolling with enhanced styling
         canvas_frame = tk.Frame(main_container, bg='#2a2a2a', relief=tk.RAISED, bd=2)
         canvas_frame.pack(fill=tk.BOTH, expand=True)
 
+        # Use horizontal scrollbar instead of vertical
         canvas = tk.Canvas(canvas_frame, bg='#1a1a1a', highlightthickness=0)
-        scrollbar = ttk.Scrollbar(canvas_frame, orient="vertical", command=canvas.yview)
+        scrollbar = ttk.Scrollbar(canvas_frame, orient="horizontal", command=canvas.xview)
         scrollable_frame = tk.Frame(canvas, bg='#1a1a1a')
 
         scrollable_frame.bind(
@@ -371,10 +379,10 @@ complex problems in science, technology, and beyond. The future is quantum! 🌟
         )
 
         canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
-        canvas.configure(yscrollcommand=scrollbar.set)
+        canvas.configure(xscrollcommand=scrollbar.set)  # Changed to xscrollcommand
 
-        canvas.pack(side="left", fill="both", expand=True, padx=5, pady=5)
-        scrollbar.pack(side="right", fill="y")
+        canvas.pack(side="top", fill="both", expand=True, padx=5, pady=5)
+        scrollbar.pack(side="bottom", fill="x")  # Changed to bottom and fill x
 
         # Enhanced gate definitions with more details
         gates = [
@@ -388,15 +396,32 @@ complex problems in science, technology, and beyond. The future is quantum! 🌟
             ("CZ Gate", "Controlled Z", "Conditional phase flip", "#ff9ff3", "⭐", 4),
         ]
 
-        # Create enhanced gate cards
-        for name, description, formula, color, icon, difficulty in gates:
-            self.create_enhanced_gate_card(scrollable_frame, name, description,
-                                         formula, color, icon, difficulty)
+        # Create one single row with all gates
+        row_frame = tk.Frame(scrollable_frame, bg='#1a1a1a')
+        row_frame.pack(fill=tk.BOTH, expand=True, pady=20)
 
-    def create_enhanced_gate_card(self, parent, name, description, formula, color, icon, difficulty):
-        """Create enhanced cards for quantum gates with hover effects"""
-        card_frame = tk.Frame(parent, bg='#2a2a2a', relief=tk.FLAT, bd=0)
-        card_frame.pack(fill=tk.X, padx=20, pady=12)
+        # Add all gates to the single row
+        for name, description, formula, color, icon, difficulty in gates:
+            gate_container = tk.Frame(row_frame, bg='#1a1a1a')
+            gate_container.pack(side=tk.LEFT, fill=tk.Y, padx=15)  # Changed to side=tk.LEFT and fill=tk.Y
+
+            self.create_enhanced_gate_card_horizontal(gate_container, name, description,
+                                                    formula, color, icon, difficulty)
+
+        # Enable mouse wheel scrolling on the canvas
+        def on_mousewheel(event):
+            canvas.xview_scroll(int(-1*(event.delta/120)), "units")
+
+        canvas.bind("<MouseWheel>", on_mousewheel)
+        # For Linux
+        canvas.bind("<Button-4>", lambda e: canvas.xview_scroll(-1, "units"))
+        canvas.bind("<Button-5>", lambda e: canvas.xview_scroll(1, "units"))
+
+    def create_enhanced_gate_card_horizontal(self, parent, name, description, formula, color, icon, difficulty):
+        """Create enhanced cards for quantum gates with horizontal layout and hover effects"""
+        card_frame = tk.Frame(parent, bg='#2a2a2a', relief=tk.FLAT, bd=0, width=200, height=250)  # Fixed size
+        card_frame.pack(fill=tk.BOTH, expand=True, padx=5, pady=8)
+        card_frame.pack_propagate(False)  # Maintain fixed size
 
         # Glow effect frame (initially hidden)
         glow_frame = tk.Frame(card_frame, bg=color, height=3)
@@ -405,50 +430,49 @@ complex problems in science, technology, and beyond. The future is quantum! 🌟
 
         # Main content frame
         content_frame = tk.Frame(card_frame, bg='#2a2a2a')
-        content_frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=15)
+        content_frame.pack(fill=tk.BOTH, expand=True, padx=15, pady=12)
 
         # Header with icon and title
         header_frame = tk.Frame(content_frame, bg='#2a2a2a')
         header_frame.pack(fill=tk.X, pady=(0, 8))
 
-        # Gate icon
+        # Gate icon - centered
         icon_label = tk.Label(header_frame, text=icon,
-                             font=('Arial', 24), bg='#2a2a2a')
-        icon_label.pack(side=tk.LEFT, padx=(0, 15))
+                            font=('Arial', 24), bg='#2a2a2a')  # Increased icon size
+        icon_label.pack()
 
-        # Title and difficulty
-        title_frame = tk.Frame(header_frame, bg='#2a2a2a')
-        title_frame.pack(side=tk.LEFT, fill=tk.X, expand=True)
+        # Title - centered
+        name_label = tk.Label(header_frame, text=name,
+                            font=('Arial', 12, 'bold'),  # Slightly smaller font
+                            fg=color, bg='#2a2a2a')
+        name_label.pack(pady=(5, 0))
 
-        name_label = tk.Label(title_frame, text=name,
-                             font=('Arial', 16, 'bold'),
-                             fg=color, bg='#2a2a2a')
-        name_label.pack(anchor=tk.W)
-
-        # Difficulty stars
+        # Difficulty stars - centered
         stars = "⭐" * difficulty + "☆" * (5 - difficulty)
-        difficulty_label = tk.Label(title_frame, text=f"Difficulty: {stars}",
-                                   font=('Arial', 10),
-                                   fg='#f39c12', bg='#2a2a2a')
-        difficulty_label.pack(anchor=tk.W)
+        difficulty_label = tk.Label(header_frame, text=f"{stars}",
+                                font=('Arial', 8),  # Smaller font
+                                fg='#f39c12', bg='#2a2a2a')
+        difficulty_label.pack()
 
-        # Description and formula
+        # Description - centered
         desc_label = tk.Label(content_frame, text=description,
-                             font=('Arial', 12),
-                             fg='#ffffff', bg='#2a2a2a')
-        desc_label.pack(anchor=tk.W, pady=(0, 5))
+                            font=('Arial', 9),  # Smaller font
+                            fg='#ffffff', bg='#2a2a2a',
+                            wraplength=170, justify=tk.CENTER)
+        desc_label.pack(pady=(0, 5))
 
-        formula_label = tk.Label(content_frame, text=f"Effect: {formula}",
-                                font=('Arial', 10, 'italic'),
-                                fg='#cccccc', bg='#2a2a2a')
-        formula_label.pack(anchor=tk.W)
+        # Formula - centered
+        formula_label = tk.Label(content_frame, text=formula,
+                                font=('Arial', 8, 'italic'),  # Smaller font
+                                fg='#cccccc', bg='#2a2a2a',
+                                wraplength=170, justify=tk.CENTER)
+        formula_label.pack()
 
         # Hover effects
         def on_enter(event):
             card_frame.configure(bg='#3a3a3a')
             content_frame.configure(bg='#3a3a3a')
             header_frame.configure(bg='#3a3a3a')
-            title_frame.configure(bg='#3a3a3a')
             for widget in [icon_label, name_label, difficulty_label, desc_label, formula_label]:
                 widget.configure(bg='#3a3a3a')
             glow_frame.pack(fill=tk.X, before=content_frame)
@@ -457,13 +481,17 @@ complex problems in science, technology, and beyond. The future is quantum! 🌟
             card_frame.configure(bg='#2a2a2a')
             content_frame.configure(bg='#2a2a2a')
             header_frame.configure(bg='#2a2a2a')
-            title_frame.configure(bg='#2a2a2a')
             for widget in [icon_label, name_label, difficulty_label, desc_label, formula_label]:
                 widget.configure(bg='#2a2a2a')
             glow_frame.pack_forget()
 
         card_frame.bind("<Enter>", on_enter)
         card_frame.bind("<Leave>", on_leave)
+
+        # Bind hover to all child widgets
+        for widget in [content_frame, header_frame, icon_label, name_label, difficulty_label, desc_label, formula_label]:
+            widget.bind("<Enter>", on_enter)
+            widget.bind("<Leave>", on_leave)
 
     def create_algorithms_tab(self):
         """Create the enhanced algorithms tab"""
@@ -585,7 +613,7 @@ The quantum future awaits! 🌟🚀
         algorithms_text.config(state=tk.DISABLED)
 
     def create_resources_tab(self):
-        """Create the enhanced resources tab"""
+        """Create the enhanced resources tab with horizontal layout"""
         resources_frame = ttk.Frame(self.notebook)
         self.notebook.add(resources_frame, text="🔗 Resources")
 
@@ -593,9 +621,9 @@ The quantum future awaits! 🌟🚀
         main_container = tk.Frame(resources_frame, bg='#1a1a1a')
         main_container.pack(fill=tk.BOTH, expand=True, padx=25, pady=20)
 
-        # Create scrollable frame
+        # Create scrollable frame with horizontal scrolling
         canvas = tk.Canvas(main_container, bg='#1a1a1a', highlightthickness=0)
-        scrollbar = ttk.Scrollbar(main_container, orient="vertical", command=canvas.yview)
+        scrollbar = ttk.Scrollbar(main_container, orient="horizontal", command=canvas.xview)
         scrollable_frame = tk.Frame(canvas, bg='#1a1a1a')
 
         scrollable_frame.bind(
@@ -604,49 +632,176 @@ The quantum future awaits! 🌟🚀
         )
 
         canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
-        canvas.configure(yscrollcommand=scrollbar.set)
+        canvas.configure(xscrollcommand=scrollbar.set)
 
-        canvas.pack(side="left", fill="both", expand=True)
-        scrollbar.pack(side="right", fill="y")
+        canvas.pack(side="top", fill="both", expand=True)
+        scrollbar.pack(side="bottom", fill="x")
 
         # Learning Resources section
-        self.create_section_header(scrollable_frame, "📚 Learning Resources", "#00ff88")
+        self.create_section_header_horizontal(scrollable_frame, "📚 Learning Resources", "#00ff88")
+
+        # Resources in horizontal layout
+        resources_row = tk.Frame(scrollable_frame, bg='#1a1a1a')
+        resources_row.pack(fill=tk.X, pady=10)
 
         resources = [
             ("IBM Quantum Experience", "https://quantum-computing.ibm.com/",
-             "Hands-on quantum programming", "🔬", 4),
+            "Hands-on quantum programming", "🔬", 4),
             ("Microsoft Quantum Development Kit", "https://azure.microsoft.com/en-us/products/quantum/",
-             "Q# programming language", "💻", 3),
+            "Q# programming language", "💻", 3),
             ("Google Cirq", "https://quantumai.google/cirq",
-             "Python framework for quantum circuits", "🐍", 3),
+            "Python framework for quantum circuits", "🐍", 3),
             ("Qiskit Textbook", "https://qiskit.org/textbook/",
-             "Comprehensive quantum computing textbook", "📖", 5),
+            "Comprehensive quantum computing textbook", "📖", 5),
             ("Nielsen & Chuang", "https://www.cambridge.org/core/books/quantum-computation-and-quantum-information/01E10196D0A682A6AEFFEA52D53BE9AE",
-             "The quantum computing bible", "📚", 5),
+            "The quantum computing bible", "📚", 5),
         ]
 
         for title, url, description, icon, rating in resources:
-            self.create_enhanced_resource_card(scrollable_frame, title, url, description, icon, rating)
+            resource_container = tk.Frame(resources_row, bg='#1a1a1a')
+            resource_container.pack(side=tk.LEFT, fill=tk.Y, padx=10)
+            self.create_enhanced_resource_card_horizontal(resource_container, title, url, description, icon, rating)
 
-        # Separator
-        self.create_separator(scrollable_frame)
+        # Separator with horizontal layout
+        self.create_separator_horizontal(scrollable_frame)
 
         # Tools section
-        self.create_section_header(scrollable_frame, "🛠️ Quantum Computing Tools", "#f39c12")
+        self.create_section_header_horizontal(scrollable_frame, "🛠️ Quantum Computing Tools", "#f39c12")
+
+        # Tools in horizontal layout
+        tools_row = tk.Frame(scrollable_frame, bg='#1a1a1a')
+        tools_row.pack(fill=tk.X, pady=10)
 
         tools = [
             ("Qiskit", "https://qiskit.org/",
-             "Open-source quantum computing framework", "⚛️", 5),
+            "Open-source quantum computing framework", "⚛️", 5),
             ("Cirq", "https://quantumai.google/cirq",
-             "Google's quantum computing framework", "🔧", 4),
+            "Google's quantum computing framework", "🔧", 4),
             ("PennyLane", "https://pennylane.ai/",
-             "Quantum machine learning library", "🤖", 4),
+            "Quantum machine learning library", "🤖", 4),
             ("Quantum Inspire", "https://www.quantum-inspire.com/",
-             "QuTech's quantum computing platform", "💡", 3),
+            "QuTech's quantum computing platform", "💡", 3),
         ]
 
         for title, url, description, icon, rating in tools:
-            self.create_enhanced_resource_card(scrollable_frame, title, url, description, icon, rating)
+            tool_container = tk.Frame(tools_row, bg='#1a1a1a')
+            tool_container.pack(side=tk.LEFT, fill=tk.Y, padx=10)
+            self.create_enhanced_resource_card_horizontal(tool_container, title, url, description, icon, rating)
+
+        # Enable mouse wheel scrolling on the canvas
+        def on_mousewheel(event):
+            canvas.xview_scroll(int(-1*(event.delta/120)), "units")
+
+        canvas.bind("<MouseWheel>", on_mousewheel)
+        # For Linux
+        canvas.bind("<Button-4>", lambda e: canvas.xview_scroll(-1, "units"))
+        canvas.bind("<Button-5>", lambda e: canvas.xview_scroll(1, "units"))
+
+    def create_enhanced_resource_card_horizontal(self, parent, title, url, description, icon, rating):
+        """Create enhanced resource cards with horizontal layout and hover effects"""
+        card_frame = tk.Frame(parent, bg='#2a2a2a', relief=tk.FLAT, bd=0, width=250, height=300)
+        card_frame.pack(fill=tk.BOTH, expand=True, padx=5, pady=8)
+        card_frame.pack_propagate(False)  # Maintain fixed size
+
+        # Glow frame
+        glow_frame = tk.Frame(card_frame, bg='#4ecdc4', height=2)
+        glow_frame.pack(fill=tk.X)
+        glow_frame.pack_forget()
+
+        # Content frame
+        content_frame = tk.Frame(card_frame, bg='#2a2a2a')
+        content_frame.pack(fill=tk.BOTH, expand=True, padx=15, pady=15)
+
+        # Header with icon
+        header_frame = tk.Frame(content_frame, bg='#2a2a2a')
+        header_frame.pack(fill=tk.X, pady=(0, 10))
+
+        # Icon - centered and larger
+        icon_label = tk.Label(header_frame, text=icon,
+                            font=('Arial', 28), bg='#2a2a2a')
+        icon_label.pack()
+
+        # Title - centered with wrapping
+        title_label = tk.Label(header_frame, text=title,
+                            font=('Arial', 12, 'bold'),
+                            fg='#4ecdc4', bg='#2a2a2a',
+                            cursor='hand2', wraplength=220, justify=tk.CENTER)
+        title_label.pack(pady=(5, 0))
+        title_label.bind("<Button-1>", lambda e: self.open_url(url))
+
+        # Rating stars - centered
+        stars = "⭐" * rating + "☆" * (5 - rating)
+        rating_label = tk.Label(header_frame, text=stars,
+                            font=('Arial', 10),
+                            fg='#f39c12', bg='#2a2a2a')
+        rating_label.pack(pady=(5, 0))
+
+        # Description - centered with wrapping
+        desc_label = tk.Label(content_frame, text=description,
+                            font=('Arial', 10),
+                            fg='#cccccc', bg='#2a2a2a',
+                            wraplength=220, justify=tk.CENTER)
+        desc_label.pack(pady=(10, 15))
+
+        # Try it button - centered
+        try_btn = tk.Button(content_frame, text="Try It →",
+                        bg='#00ff88', fg='#000000',
+                        font=('Arial', 10, 'bold'),
+                        padx=20, pady=8,
+                        cursor='hand2',
+                        command=lambda: self.open_url(url))
+        try_btn.pack()
+
+        # Hover effects
+        def on_enter(event):
+            card_frame.configure(bg='#3a3a3a')
+            content_frame.configure(bg='#3a3a3a')
+            header_frame.configure(bg='#3a3a3a')
+            for widget in [icon_label, title_label, rating_label, desc_label]:
+                widget.configure(bg='#3a3a3a')
+            glow_frame.pack(fill=tk.X, before=content_frame)
+
+        def on_leave(event):
+            card_frame.configure(bg='#2a2a2a')
+            content_frame.configure(bg='#2a2a2a')
+            header_frame.configure(bg='#2a2a2a')
+            for widget in [icon_label, title_label, rating_label, desc_label]:
+                widget.configure(bg='#2a2a2a')
+            glow_frame.pack_forget()
+
+        card_frame.bind("<Enter>", on_enter)
+        card_frame.bind("<Leave>", on_leave)
+
+        # Bind hover to all child widgets
+        for widget in [content_frame, header_frame, icon_label, title_label, rating_label, desc_label]:
+            widget.bind("<Enter>", on_enter)
+            widget.bind("<Leave>", on_leave)
+
+    def create_separator_horizontal(self, parent):
+        """Create a horizontal separator for horizontal layout"""
+        separator_frame = tk.Frame(parent, bg='#1a1a1a')
+        separator_frame.pack(fill=tk.X, pady=30)
+
+        # Gradient-like separator
+        colors = ['#4ecdc4', '#00ff88', '#4ecdc4']
+        for i, color in enumerate(colors):
+            line = tk.Frame(separator_frame, bg=color, height=2)
+            line.pack(fill=tk.X, pady=1)
+
+    def create_section_header_horizontal(self, parent, title, color):
+        """Create an enhanced section header for horizontal layout"""
+        header_frame = tk.Frame(parent, bg='#1a1a1a')
+        header_frame.pack(fill=tk.X, pady=(20, 15))
+
+        # Title with underline effect
+        title_label = tk.Label(header_frame, text=title,
+                            font=('Arial', 18, 'bold'),
+                            fg=color, bg='#1a1a1a')
+        title_label.pack()
+
+        # Underline
+        underline = tk.Frame(header_frame, bg=color, height=2)
+        underline.pack(fill=tk.X, pady=(5, 0))
 
     def create_section_header(self, parent, title, color):
         """Create an enhanced section header"""
