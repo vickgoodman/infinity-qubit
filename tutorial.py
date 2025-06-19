@@ -245,10 +245,11 @@ class GateTutorial:
         self.gate = gate
         self.gate_info = gate_info
         self.placed_gates = []
+        self.return_callback = None
         
         self.window = tk.Toplevel(parent)
         self.window.title(f"🎓 {gate_info['name']} Tutorial")
-        self.window.geometry("1000x800")
+        self.window.geometry("1100x850")  # Increased size slightly
         self.window.configure(bg='#1a1a1a')
         self.window.resizable(False, False)
         
@@ -277,94 +278,90 @@ class GateTutorial:
         parent_width = self.parent.winfo_width()
         parent_height = self.parent.winfo_height()
         
-        x = parent_x + (parent_width // 2) - 500
-        y = parent_y + (parent_height // 2) - 400
-        self.window.geometry(f"1000x800+{x}+{y}")
+        x = parent_x + (parent_width // 2) - 550  # Adjusted for new width
+        y = parent_y + (parent_height // 2) - 425  # Adjusted for new height
+        self.window.geometry(f"1100x850+{x}+{y}")
     
     def setup_ui(self):
         """Setup the gate tutorial interface"""
         # Title
         title_label = tk.Label(self.window, text=f"{self.gate_info['name']} Tutorial",
                               font=('Arial', 20, 'bold'), fg='#00ff88', bg='#1a1a1a')
-        title_label.pack(pady=(20, 10))
+        title_label.pack(pady=(15, 8))
         
         # Description
         desc_frame = tk.Frame(self.window, bg='#2a2a2a', relief=tk.RAISED, bd=2)
-        desc_frame.pack(fill=tk.X, padx=20, pady=(0, 20))
+        desc_frame.pack(fill=tk.X, padx=20, pady=(0, 15))
         
         desc_label = tk.Label(desc_frame, text=self.gate_info['description'],
                              font=('Arial', 12), fg='#ffffff', bg='#2a2a2a',
-                             wraplength=800, justify=tk.CENTER)
-        desc_label.pack(pady=15)
+                             wraplength=900, justify=tk.CENTER)
+        desc_label.pack(pady=12)
         
         example_label = tk.Label(desc_frame, text=f"Example: {self.gate_info['example']}",
                                 font=('Arial', 11, 'italic'), fg='#00ff88', bg='#2a2a2a')
-        example_label.pack(pady=(0, 15))
+        example_label.pack(pady=(0, 12))
         
         # Circuit area
         circuit_frame = tk.Frame(self.window, bg='#2a2a2a', relief=tk.RAISED, bd=3)
-        circuit_frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=(0, 20))
+        circuit_frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=(0, 15))
         
         circuit_title = tk.Label(circuit_frame, text="Interactive Circuit",
                                 font=('Arial', 14, 'bold'), fg='#00ff88', bg='#2a2a2a')
-        circuit_title.pack(pady=10)
+        circuit_title.pack(pady=8)
         
-        # Canvas for circuit visualization
-        self.canvas = tk.Canvas(circuit_frame, width=800, height=200,
+        # Canvas for circuit visualization - increased size
+        self.canvas = tk.Canvas(circuit_frame, width=900, height=220,
                                bg='#1a1a1a', highlightthickness=0)
-        self.canvas.pack(pady=10)
+        self.canvas.pack(pady=8)
         
         # Gate placement button
         gate_frame = tk.Frame(circuit_frame, bg='#2a2a2a')
-        gate_frame.pack(pady=10)
+        gate_frame.pack(pady=8)
         
         self.gate_btn = tk.Button(gate_frame, text=f"Add {self.gate} Gate",
                                  command=self.add_gate,
                                  font=('Arial', 12, 'bold'),
                                  bg=self.gate_info['color'], fg='#000000',
-                                 padx=20, pady=10)
-        self.gate_btn.pack(side=tk.LEFT, padx=10)
+                                 padx=20, pady=8)
+        self.gate_btn.pack(side=tk.LEFT, padx=8)
         
         # Control buttons
         run_btn = tk.Button(gate_frame, text="🚀 Run Circuit",
                            command=self.run_circuit,
                            font=('Arial', 12, 'bold'),
                            bg='#00ff88', fg='#000000',
-                           padx=20, pady=10)
-        run_btn.pack(side=tk.LEFT, padx=10)
+                           padx=20, pady=8)
+        run_btn.pack(side=tk.LEFT, padx=8)
         
         clear_btn = tk.Button(gate_frame, text="🔄 Clear",
                              command=self.clear_circuit,
                              font=('Arial', 12, 'bold'),
                              bg='#ff6b6b', fg='#ffffff',
-                             padx=20, pady=10)
-        clear_btn.pack(side=tk.LEFT, padx=10)
+                             padx=20, pady=8)
+        clear_btn.pack(side=tk.LEFT, padx=8)
         
         # Results area
         results_frame = tk.Frame(self.window, bg='#2a2a2a', relief=tk.RAISED, bd=3)
-        results_frame.pack(fill=tk.X, padx=20, pady=(0, 20))
+        results_frame.pack(fill=tk.X, padx=20, pady=(0, 15))
         
         results_title = tk.Label(results_frame, text="Results",
                                 font=('Arial', 14, 'bold'), fg='#00ff88', bg='#2a2a2a')
-        results_title.pack(pady=(10, 5))
+        results_title.pack(pady=(8, 3))
         
-        self.results_text = tk.Text(results_frame, height=8, width=80,
+        self.results_text = tk.Text(results_frame, height=6, width=90,
                                    font=('Courier', 10), bg='#1a1a1a', fg='#ffffff',
                                    relief=tk.SUNKEN, bd=2)
-        self.results_text.pack(pady=10, padx=20)
+        self.results_text.pack(pady=(0, 8), padx=15)
         
-        # Close button (only if no return callback)
-        if not self.return_callback:
-            close_frame = tk.Frame(self.window, bg='#1a1a1a')
-            close_frame.pack(pady=20)
-            
-            close_btn = tk.Button(close_frame, text="✖ Close Tutorial",
-                                 command=self.on_closing,
-                                 font=('Arial', 12, 'bold'), bg='#ff6b6b', fg='#ffffff',
-                                 padx=20, pady=10)
-            close_btn.pack()
+        # Close button - made more compact
+        close_btn = tk.Button(self.window, text="✖ Close",
+                             command=self.window.destroy,
+                             font=('Arial', 12, 'bold'), bg='#ff6b6b', fg='#ffffff',
+                             padx=25, pady=8, width=10)
+        close_btn.pack(pady=10)
         
-        # Initialize display
+        # Initialize display (removed duplicate)
         self.draw_circuit()
         self.display_initial_info()
     
