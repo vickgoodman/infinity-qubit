@@ -1,108 +1,100 @@
-# 🔬 Infinity Qubit
+# ⚛️ Infinity Qubit
 
-An educational quantum computing puzzle game where players learn quantum gates by solving circuit puzzles.
+**A Quantum Computing Puzzle Game for Curious Minds**
 
-## 🎮 Game Overview
-
-Transform quantum states by placing gates in the correct sequence! Each level presents a quantum puzzle where you must:
-
-- Start with an input quantum state (like |0⟩)
-- Use available quantum gates (H, X, Z, CNOT, etc.)
-- Reach the target state (like |+⟩ or Bell states)
-
-## 🚀 Getting Started
-
-### Prerequisites
-
-```bash
-pip install qiskit numpy qiskit-aer
-```
-
-### Running the Game
-
-```bash
-python run_game.py
-```
-
-## 🎯 How to Play
-
-1. **Select Gates**: Click on available gate buttons to add them to your circuit
-2. **Build Circuit**: Gates are placed in sequence from left to right
-3. **Run Circuit**: Click "🚀 Run Circuit" to execute your quantum circuit
-4. **Check Result**: See if your output matches the target state
-5. **Level Up**: Solve puzzles to unlock new levels with more complex challenges
-
-## 🔬 Quantum Gates
-
-- **H (Hadamard)**: Creates superposition
-- **X (Pauli-X)**: Bit flip gate
-- **Z (Pauli-Z)**: Phase flip gate
-- **I (Identity)**: Does nothing (useful for optimization)
-- **CNOT**: Two-qubit entangling gate
-
-## 🏆 Scoring
-
-- Base score: 100 points per level
-- Efficiency bonus: -5 points per gate used
-- Try to solve puzzles with fewer gates for higher scores!
-
-## 📚 Educational Value
-
-This game teaches:
-
-- Quantum state manipulation
-- Gate operations and their effects
-- Superposition and entanglement concepts
-- Quantum circuit design principles
-
-## 🛠️ Technical Details
-
-- Built with Python + Tkinter for the UI
-- Uses Qiskit for quantum simulation
-- Modular level system with JSON configuration
-- Real quantum state calculations
-
-## 🎓 Learning Path
-
-1. **Level 1**: Basic superposition with Hadamard gate
-2. **Level 2**: Bit flips with X gate
-3. **Level 3**: Phase manipulation with Z gate
-4. **Level 4**: Entanglement with CNOT gate
-5. **Advanced**: Custom puzzles and multi-qubit challenges
-
-## 🔧 Adding Custom Levels
-
-Edit `levels.json` to add your own puzzles:
-
-```json
-{
-  "name": "Your Puzzle",
-  "description": "Puzzle description",
-  "input_state": "|0⟩",
-  "target_state": "|1⟩",
-  "available_gates": ["H", "X"],
-  "qubits": 1,
-  "hint": "Your helpful hint"
-}
-```
-
-## 🎪 Features
-
-- ✅ Interactive quantum circuit builder
-- ✅ Real-time state visualization
-- ✅ Progressive difficulty levels
-- ✅ Hint system for guidance
-- ✅ Score tracking and efficiency rewards
-- ✅ Educational tooltips and explanations
-
-## 🤝 Contributing
-
-Feel free to contribute additional levels, features, or improvements!
-
-## 📜 License
-
-Educational use - feel free to modify and share!
+Welcome to **Infinity Qubit**, an interactive educational game where you learn quantum computing by solving logic-based puzzles using real quantum gates.
 
 ---
 
-🌟 **Happy Quantum Puzzle Solving!** 🌟
+## 🚀 Quick Start
+
+### 🧱 Requirements
+
+- Python 3.8+
+- `qiskit >= 1.0.0`
+- `qiskit-aer >= 0.13.0`
+- `numpy >= 1.24.0`
+- `pygame >= 2.0.0`
+- `matplotlib >= 3.6.0`
+- `scipy >= 1.10.0`
+- `pillow >= 9.0.0`
+
+Install dependencies:
+
+```bash
+pip install -r requirements.txt
+```
+
+### ▶️ Launch the Game
+
+```bash
+python3 run_game.py
+```
+
+---
+
+## 🎮 Game Modes
+
+| Mode         | Description                                             |
+| ------------ | ------------------------------------------------------- |
+| 🧪 Tutorial  | Learn how quantum gates work with hands-on guidance     |
+| 🧩 Puzzle    | Solve quantum circuit challenges across multiple levels |
+| 🧱 Sandbox   | Freely build and simulate quantum circuits              |
+| 📘 Learn Hub | Explore quantum concepts and gate theory                |
+
+---
+
+## 🧠 Educational Goals
+
+- Understand superposition, entanglement, and quantum gates.
+- Practice building circuits with H, X, Z, CNOT, and more.
+- Learn through guided hints, visual feedback, and sound effects.
+
+---
+
+## 🖼️ Visuals
+
+### Puzzle Mode in Action
+
+<!-- ![Puzzle mode gameplay](images/puzzle_mode.png) -->
+
+### Sandbox Circuit Builder
+
+![Sandbox mode interface](images/sandbox_mode.png)
+
+### Learn Hub Content
+
+![Learn hub interface](images/learn_hub.png)
+
+---
+
+## 📁 Project Structure
+
+```
+├── run_game.py            # Entry point
+├── main.py                # Launches splash screen
+├── splash_screen.py       # Game splash visuals
+├── game_mode_selection.py # Menu interface
+├── tutorial.py            # Puzzle gameplay logic
+├── sandbox_mode.py        # Freeform circuit builder
+├── learn_hub.py           # Quantum concepts explorer
+├── levels.json            # Level data
+├── Quantum_Background.jpg # Visual background
+└── requirements.txt       # Python dependencies
+```
+
+---
+
+## 🤝 Contributing
+
+Have ideas or feedback? Fork the repo, open an issue, or submit a pull request!
+
+---
+
+## 📫 Contact
+
+Created by Quantum Qubit Qrew. For inquiries, reach out at QuantumQubitQrew@protonmail.com.
+
+---
+
+## 🧬 Enjoy exploring the quantum realm!
