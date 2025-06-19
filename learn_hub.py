@@ -34,9 +34,13 @@ class LearnHub:
         # Initialize particles for animation
         self.particles = []
         self.animation_running = False
+        self.animation_id = None  # Track animation callback ID
 
         # Create the main interface
         self.create_learn_hub_ui()
+
+        # Bind window resize event
+        self.root.bind('<Configure>', self.on_window_resize)
 
         # Start background animations
         self.start_animations()
@@ -44,6 +48,28 @@ class LearnHub:
         # Make window focused
         self.root.lift()
         self.root.focus_force()
+
+    def start_animations(self):
+        """Start background animations"""
+        self.animation_running = True
+        # Start circuit animation after UI is ready with a longer interval
+        self.animation_id = self.root.after(500, self.animate_circuit)
+        # Start subtitle animation
+        self.root.after(1000, self.animate_subtitle)
+
+    def on_window_resize(self, event):
+        """Handle window resize events"""
+        # Only respond to root window resize events, not child widgets
+        if event.widget == self.root:
+            # Cancel any pending animation
+            if self.animation_id:
+                self.root.after_cancel(self.animation_id)
+
+            # Immediately redraw the circuit with new dimensions
+            self.root.after_idle(self.draw_quantum_circuit)
+
+            # Resume animation after a short delay
+            self.animation_id = self.root.after(1000, self.animate_circuit)
 
     def create_learn_hub_ui(self):
         """Create the enhanced learn hub interface"""
@@ -55,15 +81,15 @@ class LearnHub:
         top_border = tk.Frame(main_frame, bg='#00ff88', height=3)
         top_border.pack(fill=tk.X)
 
-        # Content frame
-        content_frame = tk.Frame(main_frame, bg='#1a1a1a')
+        # Content frame - changed to match tab background
+        content_frame = tk.Frame(main_frame, bg='#2a2a2a')  # Changed from #1a1a1a to #2a2a2a
         content_frame.pack(fill=tk.BOTH, expand=True, padx=25, pady=25)
 
         # Create animated header
         self.create_animated_header(content_frame)
 
-        # Create a container to center the notebook
-        notebook_container = tk.Frame(content_frame, bg='#1a1a1a')
+        # Create a container to center the notebook - changed to match
+        notebook_container = tk.Frame(content_frame, bg='#2a2a2a')  # Changed from #1a1a1a to #2a2a2a
         notebook_container.pack(fill=tk.BOTH, expand=True, pady=(20, 0))
 
         # Create notebook for tabs - centered
@@ -84,123 +110,170 @@ class LearnHub:
 
     def create_animated_header(self, parent):
         """Create an animated quantum-themed header"""
-        header_frame = tk.Frame(parent, bg='#1a1a1a')
+        header_frame = tk.Frame(parent, bg='#2a2a2a')  # Changed from #1a1a1a to #2a2a2a
         header_frame.pack(fill=tk.X, pady=(0, 20))
 
+        # Add a top navigation bar
+        nav_frame = tk.Frame(header_frame, bg='#2a2a2a')  # Changed from #1a1a1a to #2a2a2a
+        nav_frame.pack(fill=tk.X, pady=(0, 10))
+
+        # Back to Main Screen button - top right
+        back_main_btn = tk.Button(nav_frame, text="🏠 Main Screen",
+                                command=self.back_to_menu,
+                                font=('Arial', 10, 'bold'),
+                                bg='#3a3a3a', fg='#4ecdc4',  # Adjusted for gray background
+                                padx=15, pady=8,
+                                cursor='hand2',
+                                relief=tk.FLAT,
+                                borderwidth=1,
+                                bd=1)
+        back_main_btn.pack(side=tk.RIGHT)
+
+        # Add hover effect to top button
+        def on_nav_enter(event):
+            back_main_btn.configure(bg='#4ecdc4', fg='#000000')
+        def on_nav_leave(event):
+            back_main_btn.configure(bg='#3a3a3a', fg='#4ecdc4')
+
+        back_main_btn.bind("<Enter>", on_nav_enter)
+        back_main_btn.bind("<Leave>", on_nav_leave)
+
         # Quantum circuit animation canvas
-        self.circuit_canvas = tk.Canvas(header_frame, height=120, bg='#1a1a1a',
-                                       highlightthickness=0)
+        self.circuit_canvas = tk.Canvas(header_frame, height=120, bg='#2a2a2a',  # Changed from #1a1a1a to #2a2a2a
+                                    highlightthickness=0)
         self.circuit_canvas.pack(fill=tk.X, pady=(0, 15))
 
         # Draw quantum circuit after canvas is created
         self.root.after(100, self.draw_quantum_circuit)
 
         # Title with shadow effect
-        title_frame = tk.Frame(header_frame, bg='#1a1a1a')
+        title_frame = tk.Frame(header_frame, bg='#2a2a2a')  # Changed from #1a1a1a to #2a2a2a
         title_frame.pack()
 
         # Shadow title
         shadow_title = tk.Label(title_frame, text="🚀 Quantum Computing Learn Hub",
-                               font=('Arial', 32, 'bold'),
-                               fg='#003322', bg='#1a1a1a')
+                            font=('Arial', 32, 'bold'),
+                            fg='#003322', bg='#2a2a2a')  # Changed from #1a1a1a to #2a2a2a
         shadow_title.place(x=3, y=3)
 
         # Main title with gradient-like effect
         main_title = tk.Label(title_frame, text="🚀 Quantum Computing Learn Hub",
-                             font=('Arial', 32, 'bold'),
-                             fg='#00ff88', bg='#1a1a1a')
+                            font=('Arial', 32, 'bold'),
+                            fg='#00ff88', bg='#2a2a2a')  # Changed from #1a1a1a to #2a2a2a
         main_title.pack(pady=(0, 8))
 
         # Enhanced subtitle with pulsing effect
         self.subtitle_label = tk.Label(header_frame,
-                                      text="✨ Explore quantum computing concepts and resources ✨",
-                                      font=('Arial', 14, 'italic'),
-                                      fg='#4ecdc4', bg='#1a1a1a')
+                                    text="✨ Explore quantum computing concepts and resources ✨",
+                                    font=('Arial', 14, 'italic'),
+                                    fg='#4ecdc4', bg='#2a2a2a')  # Changed from #1a1a1a to #2a2a2a
         self.subtitle_label.pack()
 
         # Learning progress indicator
         self.create_learning_progress(header_frame)
 
     def draw_quantum_circuit(self):
-        """Draw an animated quantum circuit"""
-        if not hasattr(self, 'circuit_canvas'):
+        """Draw an animated quantum circuit - called only when needed"""
+        if not hasattr(self, 'circuit_canvas') or not self.circuit_canvas.winfo_exists():
             return
 
-        self.circuit_canvas.delete("all")
+        try:
+            self.circuit_canvas.delete("all")
 
-        # Get actual canvas width
-        self.circuit_canvas.update_idletasks()
-        width = self.circuit_canvas.winfo_width()
-        if width <= 1:
-            width = 1150  # fallback width
+            # Force canvas to update its dimensions
+            self.circuit_canvas.update_idletasks()
+            width = self.circuit_canvas.winfo_width()
+            height = self.circuit_canvas.winfo_height()
 
-        # Draw quantum wires with glow effect
-        wire_colors = ['#ff6b6b', '#4ecdc4', '#f39c12']
-        for i in range(3):
-            y = 30 + i * 30
-            # Draw wire lines with decreasing thickness for glow effect
-            for thickness in [6, 4, 2]:
-                color = wire_colors[i]
-                self.circuit_canvas.create_line(50, y, width-50, y,
-                                              fill=color, width=thickness,
-                                              tags="circuit")
+            # Use minimum dimensions if canvas isn't ready
+            if width <= 1:
+                width = 1150  # fallback width
+            if height <= 1:
+                height = 120   # fallback height
 
-        # Draw quantum gates with enhanced styling
-        gate_info = [
-            {'symbol': 'H', 'color': '#ff6b6b', 'x': 150},
-            {'symbol': 'X', 'color': '#4ecdc4', 'x': 250},
-            {'symbol': 'Z', 'color': '#f39c12', 'x': 350},
-            {'symbol': 'CNOT', 'color': '#9b59b6', 'x': 450, 'double': True}
-        ]
+            # Draw quantum wires with glow effect
+            wire_colors = ['#ff6b6b', '#4ecdc4', '#f39c12']
+            wire_spacing = height // 4  # Adaptive spacing based on canvas height
 
-        for gate in gate_info:
-            self.draw_enhanced_gate(gate)
+            for i in range(3):
+                y = wire_spacing + i * wire_spacing
+                # Draw wire lines with decreasing thickness for glow effect
+                for thickness in [6, 4, 2]:
+                    color = wire_colors[i]
+                    self.circuit_canvas.create_line(50, y, width-50, y,
+                                                fill=color, width=thickness,
+                                                tags="circuit")
+
+            # Draw quantum gates with enhanced styling - adaptive positioning
+            gate_spacing = (width - 200) // 4  # Adaptive gate spacing
+            gate_info = [
+                {'symbol': 'H', 'color': '#ff6b6b', 'x': 100 + gate_spacing},
+                {'symbol': 'X', 'color': '#4ecdc4', 'x': 100 + 2 * gate_spacing},
+                {'symbol': 'Z', 'color': '#f39c12', 'x': 100 + 3 * gate_spacing},
+                {'symbol': 'CNOT', 'color': '#9b59b6', 'x': 100 + 4 * gate_spacing, 'double': True}
+            ]
+
+            for gate in gate_info:
+                gate['wire_spacing'] = wire_spacing  # Pass wire spacing to gate drawing
+                self.draw_enhanced_gate(gate)
+
+        except tk.TclError:
+            # Canvas might be destroyed, ignore the error
+            pass
 
     def draw_enhanced_gate(self, gate_info):
         """Draw enhanced quantum gates with 3D effect"""
-        x = gate_info['x']
-        color = gate_info['color']
-        symbol = gate_info['symbol']
+        try:
+            x = gate_info['x']
+            color = gate_info['color']
+            symbol = gate_info['symbol']
+            wire_spacing = gate_info.get('wire_spacing', 30)
 
-        if gate_info.get('double'):
-            # CNOT gate
-            y1, y2 = 30, 90
-            # Control dot
-            self.circuit_canvas.create_oval(x-8, y1-8, x+8, y1+8,
-                                          fill=color, outline='white', width=2)
-            # Target circle
-            self.circuit_canvas.create_oval(x-15, y2-15, x+15, y2+15,
-                                          fill='', outline=color, width=3)
-            # Plus sign
-            self.circuit_canvas.create_line(x-10, y2, x+10, y2, fill=color, width=3)
-            self.circuit_canvas.create_line(x, y2-10, x, y2+10, fill=color, width=3)
-            # Connection line
-            self.circuit_canvas.create_line(x, y1, x, y2, fill=color, width=2)
-        else:
-            # Single qubit gate
-            y = 30 + (0 if symbol == 'H' else 1 if symbol == 'X' else 2) * 30
+            if gate_info.get('double'):
+                # CNOT gate - adaptive positioning
+                y1 = wire_spacing  # First wire
+                y2 = wire_spacing * 3  # Third wire
 
-            # 3D shadow effect
-            self.circuit_canvas.create_rectangle(x-17, y-12, x+17, y+12,
-                                               fill='#000000', outline='')
-            # Main gate
-            self.circuit_canvas.create_rectangle(x-15, y-10, x+15, y+10,
-                                               fill=color, outline='white', width=2)
-            # Gate symbol
-            self.circuit_canvas.create_text(x, y, text=symbol,
-                                          fill='white', font=('Arial', 12, 'bold'))
+                # Control dot
+                self.circuit_canvas.create_oval(x-8, y1-8, x+8, y1+8,
+                                            fill=color, outline='white', width=2)
+                # Target circle
+                self.circuit_canvas.create_oval(x-15, y2-15, x+15, y2+15,
+                                            fill='', outline=color, width=3)
+                # Plus sign
+                self.circuit_canvas.create_line(x-10, y2, x+10, y2, fill=color, width=3)
+                self.circuit_canvas.create_line(x, y2-10, x, y2+10, fill=color, width=3)
+                # Connection line
+                self.circuit_canvas.create_line(x, y1, x, y2, fill=color, width=2)
+            else:
+                # Single qubit gate - adaptive positioning
+                wire_index = 0 if symbol == 'H' else 1 if symbol == 'X' else 2
+                y = wire_spacing + wire_index * wire_spacing
+
+                # 3D shadow effect
+                self.circuit_canvas.create_rectangle(x-17, y-12, x+17, y+12,
+                                                fill='#000000', outline='')
+                # Main gate
+                self.circuit_canvas.create_rectangle(x-15, y-10, x+15, y+10,
+                                                fill=color, outline='white', width=2)
+                # Gate symbol
+                self.circuit_canvas.create_text(x, y, text=symbol,
+                                            fill='white', font=('Arial', 12, 'bold'))
+        except tk.TclError:
+            # Canvas might be destroyed, ignore the error
+            pass
 
     def create_learning_progress(self, parent):
         """Create a visual learning progress indicator"""
-        progress_frame = tk.Frame(parent, bg='#1a1a1a')
+        progress_frame = tk.Frame(parent, bg='#2a2a2a')  # Changed from #1a1a1a to #2a2a2a
         progress_frame.pack(fill=tk.X, pady=(15, 0))
 
         tk.Label(progress_frame, text="📈 Learning Journey",
                 font=('Arial', 14, 'bold'),
-                fg='#00ff88', bg='#1a1a1a').pack()
+                fg='#00ff88', bg='#2a2a2a').pack()  # Changed from #1a1a1a to #2a2a2a
 
         # Progress steps with enhanced visuals
-        steps_container = tk.Frame(progress_frame, bg='#1a1a1a')
+        steps_container = tk.Frame(progress_frame, bg='#2a2a2a')  # Changed from #1a1a1a to #2a2a2a
         steps_container.pack(pady=10)
 
         steps = [
@@ -211,46 +284,46 @@ class LearnHub:
         ]
 
         for i, (step, completed, color, icon) in enumerate(steps):
-            step_frame = tk.Frame(steps_container, bg='#1a1a1a')
+            step_frame = tk.Frame(steps_container, bg='#2a2a2a')  # Changed from #1a1a1a to #2a2a2a
             step_frame.pack(side=tk.LEFT, padx=15)
 
             # Enhanced circle with glow
             canvas = tk.Canvas(step_frame, width=40, height=40,
-                              bg='#1a1a1a', highlightthickness=0)
+                            bg='#2a2a2a', highlightthickness=0)  # Changed from #1a1a1a to #2a2a2a
             canvas.pack()
 
             # Glow effect for completed steps
             if completed:
                 canvas.create_oval(2, 2, 38, 38, fill=color, outline=color, width=3)
-                canvas.create_oval(8, 8, 32, 32, fill='#1a1a1a', outline='white', width=2)
+                canvas.create_oval(8, 8, 32, 32, fill='#2a2a2a', outline='white', width=2)  # Changed from #1a1a1a to #2a2a2a
                 canvas.create_text(20, 20, text="✓", fill='white', font=('Arial', 14, 'bold'))
             else:
                 canvas.create_oval(8, 8, 32, 32, fill='', outline=color, width=2)
 
             # Step label with icon
-            tk.Label(step_frame, text=f"{icon} {step}", fg=color, bg='#1a1a1a',
+            tk.Label(step_frame, text=f"{icon} {step}", fg=color, bg='#2a2a2a',  # Changed from #1a1a1a to #2a2a2a
                     font=('Arial', 10, 'bold')).pack(pady=(5, 0))
 
             # Connection line (except for last step)
             if i < len(steps) - 1:
                 line_canvas = tk.Canvas(steps_container, width=30, height=5,
-                                       bg='#1a1a1a', highlightthickness=0)
+                                    bg='#2a2a2a', highlightthickness=0)  # Changed from #1a1a1a to #2a2a2a
                 line_canvas.pack(side=tk.LEFT)
-                line_canvas.create_line(0, 2, 30, 2, fill='#333333', width=2)
+                line_canvas.create_line(0, 2, 30, 2, fill='#555555', width=2)  # Made line lighter for better visibility
 
     def style_notebook(self):
         """Apply enhanced styling to the notebook"""
         style = ttk.Style()
         style.theme_use('clam')
 
-        # Enhanced notebook styling - Fixed the focuscolor issue
+        # Enhanced notebook styling - Updated for gray background
         style.configure('TNotebook',
-                    background='#1a1a1a',
+                    background='#2a2a2a',  # Changed from #1a1a1a to #2a2a2a
                     borderwidth=0,
                     tabmargins=[2, 5, 2, 0])
 
         style.configure('TNotebook.Tab',
-                    background='#2a2a2a',
+                    background='#3a3a3a',  # Slightly darker for contrast
                     foreground='#ffffff',
                     padding=[25, 15],
                     borderwidth=0,
@@ -262,7 +335,7 @@ class LearnHub:
                 foreground=[('selected', '#000000'),
                             ('active', '#ffffff')])
 
-        style.configure('TFrame', background='#1a1a1a')
+        style.configure('TFrame', background='#2a2a2a')  # Changed from #1a1a1a to #2a2a2a
 
         # Center the tabs by configuring tab positioning
         style.configure('TNotebook', tabposition='n')
@@ -272,8 +345,8 @@ class LearnHub:
         concepts_frame = ttk.Frame(self.notebook)
         self.notebook.add(concepts_frame, text="📚 Basic Concepts")
 
-        # Main container with padding
-        main_container = tk.Frame(concepts_frame, bg='#1a1a1a')
+        # Main container with padding - changed to match text area background
+        main_container = tk.Frame(concepts_frame, bg='#2a2a2a')  # Changed from #1a1a1a to #2a2a2a
         main_container.pack(fill=tk.BOTH, expand=True, padx=25, pady=20)
 
         # Enhanced scrollable text area
@@ -281,14 +354,14 @@ class LearnHub:
         text_frame.pack(fill=tk.BOTH, expand=True)
 
         concepts_text = scrolledtext.ScrolledText(text_frame,
-                                                 wrap=tk.WORD,
-                                                 width=80, height=25,
-                                                 bg='#2a2a2a', fg='#ffffff',
-                                                 font=('Consolas', 11),
-                                                 insertbackground='#00ff88',
-                                                 selectbackground='#4ecdc4',
-                                                 selectforeground='#000000',
-                                                 padx=20, pady=15)
+                                                wrap=tk.WORD,
+                                                width=80, height=25,
+                                                bg='#2a2a2a', fg='#ffffff',
+                                                font=('Consolas', 11),
+                                                insertbackground='#00ff88',
+                                                selectbackground='#4ecdc4',
+                                                selectforeground='#000000',
+                                                padx=20, pady=15)
         concepts_text.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
 
         # Enhanced content with better formatting
@@ -360,8 +433,8 @@ complex problems in science, technology, and beyond. The future is quantum! 🌟
         gates_frame = ttk.Frame(self.notebook)
         self.notebook.add(gates_frame, text="⚡ Quantum Gates")
 
-        # Main container
-        main_container = tk.Frame(gates_frame, bg='#1a1a1a')
+        # Main container - changed to match card background
+        main_container = tk.Frame(gates_frame, bg='#2a2a2a')  # Changed from #1a1a1a to #2a2a2a
         main_container.pack(fill=tk.BOTH, expand=True, padx=25, pady=20)
 
         # Create a canvas for horizontal scrolling with enhanced styling
@@ -369,9 +442,9 @@ complex problems in science, technology, and beyond. The future is quantum! 🌟
         canvas_frame.pack(fill=tk.BOTH, expand=True)
 
         # Use horizontal scrollbar instead of vertical
-        canvas = tk.Canvas(canvas_frame, bg='#1a1a1a', highlightthickness=0)
+        canvas = tk.Canvas(canvas_frame, bg='#2a2a2a', highlightthickness=0)  # Changed from #1a1a1a to #2a2a2a
         scrollbar = ttk.Scrollbar(canvas_frame, orient="horizontal", command=canvas.xview)
-        scrollable_frame = tk.Frame(canvas, bg='#1a1a1a')
+        scrollable_frame = tk.Frame(canvas, bg='#2a2a2a')  # Changed from #1a1a1a to #2a2a2a
 
         scrollable_frame.bind(
             "<Configure>",
@@ -397,13 +470,13 @@ complex problems in science, technology, and beyond. The future is quantum! 🌟
         ]
 
         # Create one single row with all gates
-        row_frame = tk.Frame(scrollable_frame, bg='#1a1a1a')
+        row_frame = tk.Frame(scrollable_frame, bg='#2a2a2a')  # Changed from #1a1a1a to #2a2a2a
         row_frame.pack(fill=tk.BOTH, expand=True, pady=20)
 
         # Add all gates to the single row
         for name, description, formula, color, icon, difficulty in gates:
-            gate_container = tk.Frame(row_frame, bg='#1a1a1a')
-            gate_container.pack(side=tk.LEFT, fill=tk.Y, padx=15)  # Changed to side=tk.LEFT and fill=tk.Y
+            gate_container = tk.Frame(row_frame, bg='#2a2a2a')  # Changed from #1a1a1a to #2a2a2a
+            gate_container.pack(side=tk.LEFT, fill=tk.Y, padx=15)
 
             self.create_enhanced_gate_card_horizontal(gate_container, name, description,
                                                     formula, color, icon, difficulty)
@@ -498,8 +571,8 @@ complex problems in science, technology, and beyond. The future is quantum! 🌟
         algorithms_frame = ttk.Frame(self.notebook)
         self.notebook.add(algorithms_frame, text="🧠 Algorithms")
 
-        # Main container
-        main_container = tk.Frame(algorithms_frame, bg='#1a1a1a')
+        # Main container - changed to match text area background
+        main_container = tk.Frame(algorithms_frame, bg='#2a2a2a')  # Changed from #1a1a1a to #2a2a2a
         main_container.pack(fill=tk.BOTH, expand=True, padx=25, pady=20)
 
         # Enhanced scrollable text area
@@ -507,14 +580,14 @@ complex problems in science, technology, and beyond. The future is quantum! 🌟
         text_frame.pack(fill=tk.BOTH, expand=True)
 
         algorithms_text = scrolledtext.ScrolledText(text_frame,
-                                                   wrap=tk.WORD,
-                                                   width=80, height=25,
-                                                   bg='#2a2a2a', fg='#ffffff',
-                                                   font=('Consolas', 11),
-                                                   insertbackground='#00ff88',
-                                                   selectbackground='#4ecdc4',
-                                                   selectforeground='#000000',
-                                                   padx=20, pady=15)
+                                                wrap=tk.WORD,
+                                                width=80, height=25,
+                                                bg='#2a2a2a', fg='#ffffff',
+                                                font=('Consolas', 11),
+                                                insertbackground='#00ff88',
+                                                selectbackground='#4ecdc4',
+                                                selectforeground='#000000',
+                                                padx=20, pady=15)
         algorithms_text.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
 
         # Enhanced algorithm content
@@ -618,13 +691,13 @@ The quantum future awaits! 🌟🚀
         self.notebook.add(resources_frame, text="🔗 Resources")
 
         # Main container
-        main_container = tk.Frame(resources_frame, bg='#1a1a1a')
+        main_container = tk.Frame(resources_frame, bg='#2a2a2a')
         main_container.pack(fill=tk.BOTH, expand=True, padx=25, pady=20)
 
         # Create scrollable frame with horizontal scrolling
-        canvas = tk.Canvas(main_container, bg='#1a1a1a', highlightthickness=0)
+        canvas = tk.Canvas(main_container, bg='#2a2a2a', highlightthickness=0)
         scrollbar = ttk.Scrollbar(main_container, orient="horizontal", command=canvas.xview)
-        scrollable_frame = tk.Frame(canvas, bg='#1a1a1a')
+        scrollable_frame = tk.Frame(canvas, bg='#2a2a2a')
 
         scrollable_frame.bind(
             "<Configure>",
@@ -641,7 +714,7 @@ The quantum future awaits! 🌟🚀
         self.create_section_header_horizontal(scrollable_frame, "📚 Learning Resources", "#00ff88")
 
         # Resources in horizontal layout
-        resources_row = tk.Frame(scrollable_frame, bg='#1a1a1a')
+        resources_row = tk.Frame(scrollable_frame, bg='#2a2a2a')
         resources_row.pack(fill=tk.X, pady=10)
 
         resources = [
@@ -658,7 +731,7 @@ The quantum future awaits! 🌟🚀
         ]
 
         for title, url, description, icon, rating in resources:
-            resource_container = tk.Frame(resources_row, bg='#1a1a1a')
+            resource_container = tk.Frame(resources_row, bg='#2a2a2a')  # Changed from #1a1a1a to #2a2a2a
             resource_container.pack(side=tk.LEFT, fill=tk.Y, padx=10)
             self.create_enhanced_resource_card_horizontal(resource_container, title, url, description, icon, rating)
 
@@ -669,7 +742,7 @@ The quantum future awaits! 🌟🚀
         self.create_section_header_horizontal(scrollable_frame, "🛠️ Quantum Computing Tools", "#f39c12")
 
         # Tools in horizontal layout
-        tools_row = tk.Frame(scrollable_frame, bg='#1a1a1a')
+        tools_row = tk.Frame(scrollable_frame, bg='#2a2a2a')
         tools_row.pack(fill=tk.X, pady=10)
 
         tools = [
@@ -684,7 +757,7 @@ The quantum future awaits! 🌟🚀
         ]
 
         for title, url, description, icon, rating in tools:
-            tool_container = tk.Frame(tools_row, bg='#1a1a1a')
+            tool_container = tk.Frame(tools_row, bg='#2a2a2a')  # Changed from #1a1a1a to #2a2a2a
             tool_container.pack(side=tk.LEFT, fill=tk.Y, padx=10)
             self.create_enhanced_resource_card_horizontal(tool_container, title, url, description, icon, rating)
 
@@ -779,7 +852,7 @@ The quantum future awaits! 🌟🚀
 
     def create_separator_horizontal(self, parent):
         """Create a horizontal separator for horizontal layout"""
-        separator_frame = tk.Frame(parent, bg='#1a1a1a')
+        separator_frame = tk.Frame(parent, bg='#2a2a2a')  # Changed from #1a1a1a to #2a2a2a
         separator_frame.pack(fill=tk.X, pady=30)
 
         # Gradient-like separator
@@ -790,13 +863,13 @@ The quantum future awaits! 🌟🚀
 
     def create_section_header_horizontal(self, parent, title, color):
         """Create an enhanced section header for horizontal layout"""
-        header_frame = tk.Frame(parent, bg='#1a1a1a')
+        header_frame = tk.Frame(parent, bg='#2a2a2a')  # Changed from #1a1a1a to #2a2a2a
         header_frame.pack(fill=tk.X, pady=(20, 15))
 
         # Title with underline effect
         title_label = tk.Label(header_frame, text=title,
                             font=('Arial', 18, 'bold'),
-                            fg=color, bg='#1a1a1a')
+                            fg=color, bg='#2a2a2a')  # Changed from #1a1a1a to #2a2a2a
         title_label.pack()
 
         # Underline
@@ -909,65 +982,75 @@ The quantum future awaits! 🌟🚀
 
     def create_enhanced_footer(self, parent):
         """Create enhanced footer with gradient buttons"""
-        footer_frame = tk.Frame(parent, bg='#1a1a1a')
+        footer_frame = tk.Frame(parent, bg='#2a2a2a')  # Changed from #1a1a1a to #2a2a2a
         footer_frame.pack(fill=tk.X, pady=(25, 0))
 
-        # Back button with enhanced styling
-        back_btn = tk.Button(footer_frame, text="⬅️ Back to Menu",
+        # Create a centered button container
+        button_container = tk.Frame(footer_frame, bg='#2a2a2a')  # Changed from #1a1a1a to #2a2a2a
+        button_container.pack(expand=True)
+
+        # Back to Main Screen button with enhanced styling
+        back_btn = tk.Button(button_container, text="🏠 Back to Main Screen",
                             command=self.back_to_menu,
-                            font=('Arial', 12, 'bold'),
+                            font=('Arial', 14, 'bold'),
                             bg='#4ecdc4', fg='#000000',
-                            padx=25, pady=12,
+                            padx=30, pady=15,
                             cursor='hand2',
                             relief=tk.FLAT,
-                            borderwidth=0)
-        back_btn.pack(side=tk.LEFT)
+                            borderwidth=0,
+                            width=20)
+        back_btn.pack(side=tk.LEFT, padx=10)
 
-        # Add hover effect to back button
+        # Close button with enhanced styling
+        close_btn = tk.Button(button_container, text="❌ Close Application",
+                            command=self.close_window,
+                            font=('Arial', 14, 'bold'),
+                            bg='#ff6b6b', fg='#ffffff',
+                            padx=30, pady=15,
+                            cursor='hand2',
+                            relief=tk.FLAT,
+                            borderwidth=0,
+                            width=20)
+        close_btn.pack(side=tk.LEFT, padx=10)
+
+        # Add enhanced hover effects to back button
         def on_back_enter(event):
-            back_btn.configure(bg='#00ff88')
+            back_btn.configure(bg='#00ff88', fg='#000000')
         def on_back_leave(event):
-            back_btn.configure(bg='#4ecdc4')
+            back_btn.configure(bg='#4ecdc4', fg='#000000')
 
         back_btn.bind("<Enter>", on_back_enter)
         back_btn.bind("<Leave>", on_back_leave)
 
-        # Close button with enhanced styling
-        close_btn = tk.Button(footer_frame, text="❌ Close",
-                             command=self.close_window,
-                             font=('Arial', 12, 'bold'),
-                             bg='#ff6b6b', fg='#ffffff',
-                             padx=25, pady=12,
-                             cursor='hand2',
-                             relief=tk.FLAT,
-                             borderwidth=0)
-        close_btn.pack(side=tk.RIGHT)
-
-        # Add hover effect to close button
+        # Add enhanced hover effects to close button
         def on_close_enter(event):
-            close_btn.configure(bg='#e74c3c')
+            close_btn.configure(bg='#e74c3c', fg='#ffffff')
         def on_close_leave(event):
-            close_btn.configure(bg='#ff6b6b')
+            close_btn.configure(bg='#ff6b6b', fg='#ffffff')
 
         close_btn.bind("<Enter>", on_close_enter)
         close_btn.bind("<Leave>", on_close_leave)
 
-    def start_animations(self):
-        """Start background animations"""
-        self.animation_running = True
-        self.root.after(500, self.animate_circuit)  # Start after UI is ready
-        self.root.after(1000, self.animate_subtitle)
+        # Add a separator line above the buttons
+        separator = tk.Frame(footer_frame, bg='#4ecdc4', height=2)
+        separator.pack(fill=tk.X, pady=(0, 15))
 
     def animate_circuit(self):
-        """Animate the quantum circuit"""
+        """Animate the quantum circuit with subtle effects"""
         if not self.animation_running:
             return
 
-        # Redraw circuit with subtle animation
-        self.draw_quantum_circuit()
+        try:
+            # Only redraw occasionally for subtle animation
+            # You could add subtle effects here instead of full redraw
+            # For now, let's make it less frequent
+            pass  # Remove the redraw to stop flickering
 
-        # Schedule next animation frame
-        self.root.after(3000, self.animate_circuit)
+            # Schedule next animation frame (longer interval)
+            self.animation_id = self.root.after(10000, self.animate_circuit)  # Every 10 seconds instead of 3
+        except tk.TclError:
+            # Widget might be destroyed, stop animation
+            self.animation_running = False
 
     def animate_subtitle(self):
         """Animate subtitle with pulsing effect"""
@@ -975,13 +1058,16 @@ The quantum future awaits! 🌟🚀
             return
 
         try:
-            current_color = self.subtitle_label.cget('fg')
-            new_color = '#00ff88' if current_color == '#4ecdc4' else '#4ecdc4'
-            self.subtitle_label.configure(fg=new_color)
-        except:
-            pass  # Ignore errors if widget is destroyed
+            if self.subtitle_label.winfo_exists():
+                current_color = self.subtitle_label.cget('fg')
+                new_color = '#00ff88' if current_color == '#4ecdc4' else '#4ecdc4'
+                self.subtitle_label.configure(fg=new_color)
 
-        self.root.after(2000, self.animate_subtitle)
+                # Schedule next animation frame
+                self.root.after(2000, self.animate_subtitle)
+        except (tk.TclError, AttributeError):
+            # Widget might be destroyed or not exist, ignore
+            pass
 
     def open_url(self, url):
         """Open URL in default browser"""
@@ -991,19 +1077,114 @@ The quantum future awaits! 🌟🚀
             print(f"Error opening URL: {e}")
 
     def back_to_menu(self):
-        """Go back to the main menu"""
+        """Go back to the main screen/menu"""
         self.animation_running = False
+
+        # Cancel any pending animations
+        if hasattr(self, 'animation_id') and self.animation_id:
+            try:
+                self.root.after_cancel(self.animation_id)
+            except:
+                pass
+
         self.root.destroy()
         try:
+            # Try to import and launch the main menu
             from game_mode_selection import GameModeSelection
             selection_window = GameModeSelection()
             selection_window.run()
+        except ImportError:
+            try:
+                # Alternative: try to import main menu
+                import main_menu
+                main_menu.main()
+            except ImportError:
+                try:
+                    # Another alternative: try to run the main application
+                    import main
+                    main.main()
+                except ImportError:
+                    print("Could not find main menu module. Please run the main application.")
+                    # Optionally create a simple menu selection
+                    self.create_simple_menu_selection()
         except Exception as e:
-            print(f"Error returning to menu: {e}")
+            print(f"Error returning to main screen: {e}")
+            # Fallback to simple menu
+            self.create_simple_menu_selection()
+
+    def create_simple_menu_selection(self):
+        """Create a simple menu selection as fallback"""
+        menu_root = tk.Tk()
+        menu_root.title("Infinity Qubit - Main Menu")
+        menu_root.geometry("400x300")
+        menu_root.configure(bg='#1a1a1a')
+
+        # Center the window
+        menu_root.update_idletasks()
+        x = (menu_root.winfo_screenwidth() - 400) // 2
+        y = (menu_root.winfo_screenheight() - 300) // 2
+        menu_root.geometry(f"400x300+{x}+{y}")
+
+        # Title
+        title_label = tk.Label(menu_root, text="🚀 Infinity Qubit",
+                            font=('Arial', 24, 'bold'),
+                            fg='#00ff88', bg='#1a1a1a')
+        title_label.pack(pady=30)
+
+        # Subtitle
+        subtitle_label = tk.Label(menu_root, text="Main Menu",
+                                font=('Arial', 16),
+                                fg='#4ecdc4', bg='#1a1a1a')
+        subtitle_label.pack(pady=10)
+
+        # Menu options
+        button_frame = tk.Frame(menu_root, bg='#1a1a1a')
+        button_frame.pack(expand=True)
+
+        # Learn Hub button
+        learn_btn = tk.Button(button_frame, text="📚 Learn Hub",
+                            command=lambda: self.reopen_learn_hub(menu_root),
+                            font=('Arial', 12, 'bold'),
+                            bg='#4ecdc4', fg='#000000',
+                            padx=20, pady=10,
+                            cursor='hand2', width=15)
+        learn_btn.pack(pady=5)
+
+        # Placeholder for other modes
+        placeholder_label = tk.Label(button_frame, text="Other game modes coming soon...",
+                                    font=('Arial', 10, 'italic'),
+                                    fg='#888888', bg='#1a1a1a')
+        placeholder_label.pack(pady=20)
+
+        # Close button
+        close_btn = tk.Button(button_frame, text="❌ Exit",
+                            command=menu_root.destroy,
+                            font=('Arial', 12, 'bold'),
+                            bg='#ff6b6b', fg='#ffffff',
+                            padx=20, pady=10,
+                            cursor='hand2', width=15)
+        close_btn.pack(pady=5)
+
+        menu_root.mainloop()
+
+    def reopen_learn_hub(self, menu_root):
+        """Reopen the Learn Hub"""
+        menu_root.destroy()
+        new_root = tk.Tk()
+        LearnHub(new_root)
+        new_root.mainloop()
 
     def close_window(self):
         """Close the learn hub window"""
         self.animation_running = False
+
+        # Cancel any pending animations
+        if hasattr(self, 'animation_id') and self.animation_id:
+            try:
+                self.root.after_cancel(self.animation_id)
+            except:
+                pass
+
         self.root.destroy()
 
 def main():
