@@ -43,7 +43,7 @@ class SplashScreen:
         self.animate_loading()
         
         # Start timer to close splash screen
-        self.splash.after(4000, self.close_splash)
+        self.splash.after(1500, self.close_splash)
         
     def create_splash_content(self):
         """Create the content for the splash screen"""
