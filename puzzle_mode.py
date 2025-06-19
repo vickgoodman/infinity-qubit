@@ -606,23 +606,241 @@ class PuzzleMode:
             btn.pack(side=tk.LEFT, padx=5)
 
     def add_gate(self, gate):
-        """Add a gate to the circuit"""
+        """Add a gate to the circuit with qubit selection"""
         level = self.levels[self.current_level]
         max_allowed = level.get('max_gates', 20)
         
         if len(self.placed_gates) < max_allowed:
-            self.placed_gates.append(gate)
-            self.draw_circuit()
-            self.play_sound(gate)
+            if gate in ['H', 'X', 'Y', 'Z', 'S', 'T']:
+                # For single-qubit gates, show qubit selection dialog
+                self.show_qubit_selection_dialog(gate, level['qubits'])
+            elif gate in ['CNOT', 'CZ'] and level['qubits'] > 1:
+                # For two-qubit gates, show control/target selection
+                self.show_two_qubit_selection_dialog(gate, level['qubits'])
+            elif gate == 'Toffoli' and level['qubits'] > 2:
+                # For Toffoli, show three-qubit selection
+                self.show_toffoli_selection_dialog(gate, level['qubits'])
+            else:
+                self.placed_gates.append({'gate': gate, 'qubits': [0]})
+                self.draw_circuit()
+                self.play_sound(gate)
         else:
             messagebox.showwarning("Gate Limit", f"Maximum {max_allowed} gates allowed for this puzzle!")
             self.play_sound('error')
+
+    def show_toffoli_selection_dialog(self, gate, num_qubits):
+        """Show dialog to select control and target qubits for Toffoli gate"""
+        dialog = tk.Toplevel(self.root)
+        dialog.title(f"Place {gate} Gate")
+        dialog.geometry("450x400")
+        dialog.configure(bg='#1a1a1a')
+        dialog.transient(self.root)
+        dialog.grab_set()
+        
+        tk.Label(dialog, text=f"Select qubits for {gate} gate:",
+                font=('Arial', 14, 'bold'), fg='#ffffff', bg='#1a1a1a').pack(pady=20)
+        
+        control1_var = tk.IntVar(value=0)
+        control2_var = tk.IntVar(value=1 if num_qubits > 1 else 0)
+        target_var = tk.IntVar(value=2 if num_qubits > 2 else 0)
+        
+        # Control qubit 1 selection
+        tk.Label(dialog, text="Control Qubit 1:", font=('Arial', 12), 
+                fg='#4ecdc4', bg='#1a1a1a').pack(pady=(10, 5))
+        control1_frame = tk.Frame(dialog, bg='#1a1a1a')
+        control1_frame.pack()
+        
+        for i in range(num_qubits):
+            tk.Radiobutton(control1_frame, text=f"q{i}", variable=control1_var, value=i,
+                        font=('Arial', 10), fg='#ffffff', bg='#1a1a1a').pack(side=tk.LEFT, padx=5)
+        
+        # Control qubit 2 selection
+        tk.Label(dialog, text="Control Qubit 2:", font=('Arial', 12), 
+                fg='#4ecdc4', bg='#1a1a1a').pack(pady=(20, 5))
+        control2_frame = tk.Frame(dialog, bg='#1a1a1a')
+        control2_frame.pack()
+        
+        for i in range(num_qubits):
+            tk.Radiobutton(control2_frame, text=f"q{i}", variable=control2_var, value=i,
+                        font=('Arial', 10), fg='#ffffff', bg='#1a1a1a').pack(side=tk.LEFT, padx=5)
+        
+        # Target qubit selection
+        tk.Label(dialog, text="Target Qubit:", font=('Arial', 12), 
+                fg='#ff6b6b', bg='#1a1a1a').pack(pady=(20, 5))
+        target_frame = tk.Frame(dialog, bg='#1a1a1a')
+        target_frame.pack()
+        
+        for i in range(num_qubits):
+            tk.Radiobutton(target_frame, text=f"q{i}", variable=target_var, value=i,
+                        font=('Arial', 10), fg='#ffffff', bg='#1a1a1a').pack(side=tk.LEFT, padx=5)
+        
+        def confirm_selection():
+            control1 = control1_var.get()
+            control2 = control2_var.get()
+            target = target_var.get()
+            
+            if len(set([control1, control2, target])) == 3:
+                self.placed_gates.append({'gate': gate, 'qubits': [control1, control2, target]})
+                self.draw_circuit()
+                self.play_sound(gate)
+                dialog.destroy()
+            else:
+                messagebox.showerror("Invalid Selection", "All three qubits must be different!")
+        
+        tk.Button(dialog, text="Place Gate", command=confirm_selection,
+                font=('Arial', 12, 'bold'), bg='#00ff88', fg='#000000',
+                padx=20, pady=10).pack(pady=20)
+
+    def show_qubit_selection_dialog(self, gate, num_qubits):
+        """Show dialog to select which qubit to place the gate on"""
+        if num_qubits == 1:
+            # Only one qubit, no selection needed
+            self.placed_gates.append({'gate': gate, 'qubits': [0]})
+            self.draw_circuit()
+            self.play_sound(gate)
+            return
+        
+        dialog = tk.Toplevel(self.root)
+        dialog.title(f"Place {gate} Gate")
+        dialog.geometry("300x200")
+        dialog.configure(bg='#1a1a1a')
+        dialog.transient(self.root)
+        dialog.grab_set()
+        
+        tk.Label(dialog, text=f"Select qubit for {gate} gate:",
+                font=('Arial', 14, 'bold'), fg='#ffffff', bg='#1a1a1a').pack(pady=20)
+        
+        selected_qubit = tk.IntVar(value=0)
+        
+        for i in range(num_qubits):
+            tk.Radiobutton(dialog, text=f"Qubit {i}", variable=selected_qubit, value=i,
+                        font=('Arial', 12), fg='#ffffff', bg='#1a1a1a',
+                        selectcolor='#4ecdc4').pack(pady=5)
+        
+        def confirm_selection():
+            self.placed_gates.append({'gate': gate, 'qubits': [selected_qubit.get()]})
+            self.draw_circuit()
+            self.play_sound(gate)
+            dialog.destroy()
+        
+        tk.Button(dialog, text="Place Gate", command=confirm_selection,
+                font=('Arial', 12, 'bold'), bg='#00ff88', fg='#000000',
+                padx=20, pady=10).pack(pady=20)
+
+    def show_two_qubit_selection_dialog(self, gate, num_qubits):
+        """Show dialog to select control and target qubits for two-qubit gates"""
+        dialog = tk.Toplevel(self.root)
+        dialog.title(f"Place {gate} Gate")
+        dialog.geometry("400x300")
+        dialog.configure(bg='#1a1a1a')
+        dialog.transient(self.root)
+        dialog.grab_set()
+        
+        tk.Label(dialog, text=f"Select qubits for {gate} gate:",
+                font=('Arial', 14, 'bold'), fg='#ffffff', bg='#1a1a1a').pack(pady=20)
+        
+        control_var = tk.IntVar(value=0)
+        target_var = tk.IntVar(value=1 if num_qubits > 1 else 0)
+        
+        # Control qubit selection
+        tk.Label(dialog, text="Control Qubit:", font=('Arial', 12), 
+                fg='#4ecdc4', bg='#1a1a1a').pack(pady=(10, 5))
+        control_frame = tk.Frame(dialog, bg='#1a1a1a')
+        control_frame.pack()
+        
+        for i in range(num_qubits):
+            tk.Radiobutton(control_frame, text=f"q{i}", variable=control_var, value=i,
+                        font=('Arial', 10), fg='#ffffff', bg='#1a1a1a').pack(side=tk.LEFT, padx=5)
+        
+        # Target qubit selection
+        tk.Label(dialog, text="Target Qubit:", font=('Arial', 12), 
+                fg='#ff6b6b', bg='#1a1a1a').pack(pady=(20, 5))
+        target_frame = tk.Frame(dialog, bg='#1a1a1a')
+        target_frame.pack()
+        
+        for i in range(num_qubits):
+            tk.Radiobutton(target_frame, text=f"q{i}", variable=target_var, value=i,
+                        font=('Arial', 10), fg='#ffffff', bg='#1a1a1a').pack(side=tk.LEFT, padx=5)
+        
+        def confirm_selection():
+            control = control_var.get()
+            target = target_var.get()
+            if control != target:
+                self.placed_gates.append({'gate': gate, 'qubits': [control, target]})
+                self.draw_circuit()
+                self.play_sound(gate)
+                dialog.destroy()
+            else:
+                messagebox.showerror("Invalid Selection", "Control and target qubits must be different!")
+        
+        tk.Button(dialog, text="Place Gate", command=confirm_selection,
+                font=('Arial', 12, 'bold'), bg='#00ff88', fg='#000000',
+                padx=20, pady=10).pack(pady=20)
 
     def clear_circuit(self):
         """Clear all placed gates"""
         self.placed_gates = []
         self.draw_circuit()
         self.play_sound('clear')
+
+    # def draw_circuit(self):
+    #     """Draw the quantum circuit visualization"""
+    #     self.circuit_canvas.delete("all")
+        
+    #     level = self.levels[self.current_level]
+    #     num_qubits = level['qubits']
+        
+    #     # Adaptive dimensions
+    #     wire_start = int(self.canvas_width * 0.12)
+    #     wire_end = int(self.canvas_width * 0.88)
+    #     circuit_height = self.canvas_height
+    #     qubit_spacing = circuit_height // (num_qubits + 1)
+        
+    #     line_width = max(3, int(self.canvas_width / 300))
+    #     font_size = max(12, int(self.canvas_width / 75))
+        
+    #     # Draw input/output sections
+    #     input_x = wire_start - int(self.canvas_width * 0.05)
+    #     output_x = wire_end + int(self.canvas_width * 0.05)
+    #     margin_y = int(circuit_height * 0.1)
+        
+    #     self.circuit_canvas.create_line(input_x, margin_y, input_x, circuit_height - margin_y,
+    #                             fill='#ff6b6b', width=line_width)
+    #     self.circuit_canvas.create_text(input_x - int(self.canvas_width * 0.04), circuit_height // 2,
+    #                             text="Input", fill='#ff6b6b',
+    #                             font=('Arial', font_size, 'bold'), angle=90)
+        
+    #     self.circuit_canvas.create_line(output_x, margin_y, output_x, circuit_height - margin_y,
+    #                             fill='#ff6b6b', width=line_width)
+    #     self.circuit_canvas.create_text(output_x + int(self.canvas_width * 0.04), circuit_height // 2,
+    #                             text="Output", fill='#ff6b6b',
+    #                             font=('Arial', font_size, 'bold'), angle=90)
+        
+    #     # Draw quantum wires
+    #     for qubit in range(num_qubits):
+    #         y_pos = (qubit + 1) * qubit_spacing + margin_y
+    #         self.circuit_canvas.create_line(wire_start, y_pos, wire_end, y_pos,
+    #                                 fill='#ffffff', width=line_width)
+    #         self.circuit_canvas.create_text(wire_start - int(self.canvas_width * 0.02), y_pos,
+    #                                 text=f"q{qubit}", fill='#ffffff',
+    #                                 font=('Arial', font_size - 2, 'bold'))
+        
+    #     # Draw gates
+    #     gate_width = max(60, int(self.canvas_width / 18))
+    #     gate_height = max(50, int(self.canvas_height / 10))
+    #     gate_spacing = max(100, int(self.canvas_width / 15))
+    #     gate_font_size = max(16, int(self.canvas_width / 80))
+        
+    #     for i, gate in enumerate(self.placed_gates):
+    #         x = wire_start + int(self.canvas_width * 0.08) + i * gate_spacing
+            
+    #         if gate in ['CNOT', 'CZ'] and num_qubits > 1:
+    #             self.draw_two_qubit_gate(x, qubit_spacing, margin_y, gate, line_width)
+    #         elif gate == 'Toffoli' and num_qubits > 2:
+    #             self.draw_toffoli_gate(x, qubit_spacing, margin_y, line_width)
+    #         else:
+    #             self.draw_single_qubit_gate(x, qubit_spacing, margin_y, gate, 
+    #                                       gate_width, gate_height, gate_font_size, line_width)
 
     def draw_circuit(self):
         """Draw the quantum circuit visualization"""
@@ -672,20 +890,47 @@ class PuzzleMode:
         gate_spacing = max(100, int(self.canvas_width / 15))
         gate_font_size = max(16, int(self.canvas_width / 80))
         
-        for i, gate in enumerate(self.placed_gates):
+        for i, gate_info in enumerate(self.placed_gates):
             x = wire_start + int(self.canvas_width * 0.08) + i * gate_spacing
             
-            if gate in ['CNOT', 'CZ'] and num_qubits > 1:
-                self.draw_two_qubit_gate(x, qubit_spacing, margin_y, gate, line_width)
-            elif gate == 'Toffoli' and num_qubits > 2:
-                self.draw_toffoli_gate(x, qubit_spacing, margin_y, line_width)
+            # Handle both old format (string) and new format (dict)
+            if isinstance(gate_info, str):
+                gate = gate_info
+                qubits = [0]  # Default to qubit 0 for backward compatibility
             else:
-                self.draw_single_qubit_gate(x, qubit_spacing, margin_y, gate, 
-                                          gate_width, gate_height, gate_font_size, line_width)
+                gate = gate_info['gate']
+                qubits = gate_info['qubits']
+            
+            if gate in ['CNOT', 'CZ'] and len(qubits) >= 2:
+                self.draw_two_qubit_gate(x, qubit_spacing, margin_y, gate, qubits, line_width)
+            elif gate == 'Toffoli' and len(qubits) >= 3:
+                self.draw_toffoli_gate(x, qubit_spacing, margin_y, qubits, line_width)
+            else:
+                # Single qubit gates
+                self.draw_single_qubit_gate(x, qubit_spacing, margin_y, gate, qubits[0],
+                                        gate_width, gate_height, gate_font_size, line_width)
 
-    def draw_single_qubit_gate(self, x, qubit_spacing, margin_y, gate, width, height, font_size, line_width):
+    # def draw_single_qubit_gate(self, x, qubit_spacing, margin_y, gate, width, height, font_size, line_width):
+    #     """Draw a single qubit gate"""
+    #     y_pos = qubit_spacing + margin_y
+        
+    #     gate_colors = {
+    #         'H': '#ff6b6b', 'X': '#4ecdc4', 'Y': '#45b7d1', 'Z': '#96ceb4',
+    #         'S': '#feca57', 'T': '#ff9ff3'
+    #     }
+        
+    #     color = gate_colors.get(gate, '#ffffff')
+        
+    #     self.circuit_canvas.create_rectangle(x - width//2, y_pos - height//2,
+    #                                 x + width//2, y_pos + height//2,
+    #                                 fill=color, outline='#ffffff', width=line_width)
+        
+    #     self.circuit_canvas.create_text(x, y_pos, text=gate,
+    #                             fill='#000000', font=('Arial', font_size, 'bold'))
+
+    def draw_single_qubit_gate(self, x, qubit_spacing, margin_y, gate, target_qubit, width, height, font_size, line_width):
         """Draw a single qubit gate"""
-        y_pos = qubit_spacing + margin_y
+        y_pos = (target_qubit + 1) * qubit_spacing + margin_y
         
         gate_colors = {
             'H': '#ff6b6b', 'X': '#4ecdc4', 'Y': '#45b7d1', 'Z': '#96ceb4',
@@ -701,10 +946,47 @@ class PuzzleMode:
         self.circuit_canvas.create_text(x, y_pos, text=gate,
                                 fill='#000000', font=('Arial', font_size, 'bold'))
 
-    def draw_two_qubit_gate(self, x, qubit_spacing, margin_y, gate, line_width):
+    # def draw_two_qubit_gate(self, x, qubit_spacing, margin_y, gate, line_width):
+    #     """Draw a two-qubit gate (CNOT or CZ)"""
+    #     control_y = qubit_spacing + margin_y
+    #     target_y = 2 * qubit_spacing + margin_y
+    #     dot_radius = max(10, int(self.canvas_width / 150))
+        
+    #     # Control qubit
+    #     self.circuit_canvas.create_oval(x - dot_radius, control_y - dot_radius,
+    #                             x + dot_radius, control_y + dot_radius,
+    #                             fill='#ffffff', outline='#ffffff')
+        
+    #     # Connection line
+    #     self.circuit_canvas.create_line(x, control_y, x, target_y,
+    #                             fill='#ffffff', width=line_width)
+        
+    #     if gate == 'CNOT':
+    #         # Target qubit (X symbol)
+    #         target_radius = max(25, int(self.canvas_width / 60))
+    #         self.circuit_canvas.create_oval(x - target_radius, target_y - target_radius,
+    #                                 x + target_radius, target_y + target_radius,
+    #                                 fill='', outline='#ffffff', width=line_width)
+    #         cross_size = target_radius * 0.6
+    #         self.circuit_canvas.create_line(x - cross_size, target_y - cross_size,
+    #                                 x + cross_size, target_y + cross_size,
+    #                                 fill='#ffffff', width=line_width)
+    #         self.circuit_canvas.create_line(x - cross_size, target_y + cross_size,
+    #                                 x + cross_size, target_y - cross_size,
+    #                                 fill='#ffffff', width=line_width)
+    #     elif gate == 'CZ':
+    #         # CZ target (Z symbol)
+    #         self.circuit_canvas.create_oval(x - dot_radius, target_y - dot_radius,
+    #                                 x + dot_radius, target_y + dot_radius,
+    #                                 fill='#ffffff', outline='#ffffff')
+
+    def draw_two_qubit_gate(self, x, qubit_spacing, margin_y, gate, qubits, line_width):
         """Draw a two-qubit gate (CNOT or CZ)"""
-        control_y = qubit_spacing + margin_y
-        target_y = 2 * qubit_spacing + margin_y
+        control_qubit = qubits[0]
+        target_qubit = qubits[1]
+        
+        control_y = (control_qubit + 1) * qubit_spacing + margin_y
+        target_y = (target_qubit + 1) * qubit_spacing + margin_y
         dot_radius = max(10, int(self.canvas_width / 150))
         
         # Control qubit
@@ -735,32 +1017,72 @@ class PuzzleMode:
                                     x + dot_radius, target_y + dot_radius,
                                     fill='#ffffff', outline='#ffffff')
 
-    def draw_toffoli_gate(self, x, qubit_spacing, margin_y, line_width):
+    # def draw_toffoli_gate(self, x, qubit_spacing, margin_y, line_width):
+    #     """Draw a Toffoli (CCX) gate"""
+    #     y_positions = [(i + 1) * qubit_spacing + margin_y for i in range(3)]
+    #     dot_radius = max(8, int(self.canvas_width / 180))
+        
+    #     # Draw controls on first two qubits
+    #     for i in range(2):
+    #         self.circuit_canvas.create_oval(x - dot_radius, y_positions[i] - dot_radius,
+    #                                 x + dot_radius, y_positions[i] + dot_radius,
+    #                                 fill='#ffffff', outline='#ffffff')
+        
+    #     # Draw connection lines
+    #     self.circuit_canvas.create_line(x, y_positions[0], x, y_positions[2],
+    #                             fill='#ffffff', width=line_width)
+        
+    #     # Draw target (X symbol)
+    #     target_radius = max(20, int(self.canvas_width / 70))
+    #     self.circuit_canvas.create_oval(x - target_radius, y_positions[2] - target_radius,
+    #                             x + target_radius, y_positions[2] + target_radius,
+    #                             fill='', outline='#ffffff', width=line_width)
+    #     cross_size = target_radius * 0.6
+    #     self.circuit_canvas.create_line(x - cross_size, y_positions[2] - cross_size,
+    #                             x + cross_size, y_positions[2] + cross_size,
+    #                             fill='#ffffff', width=line_width)
+    #     self.circuit_canvas.create_line(x - cross_size, y_positions[2] + cross_size,
+    #                             x + cross_size, y_positions[2] - cross_size,
+    #                             fill='#ffffff', width=line_width)
+
+    def draw_toffoli_gate(self, x, qubit_spacing, margin_y, qubits, line_width):
         """Draw a Toffoli (CCX) gate"""
-        y_positions = [(i + 1) * qubit_spacing + margin_y for i in range(3)]
+        control1_qubit = qubits[0]
+        control2_qubit = qubits[1]
+        target_qubit = qubits[2]
+        
+        y_positions = [
+            (control1_qubit + 1) * qubit_spacing + margin_y,
+            (control2_qubit + 1) * qubit_spacing + margin_y,
+            (target_qubit + 1) * qubit_spacing + margin_y
+        ]
+        
         dot_radius = max(8, int(self.canvas_width / 180))
         
-        # Draw controls on first two qubits
+        # Draw controls
         for i in range(2):
             self.circuit_canvas.create_oval(x - dot_radius, y_positions[i] - dot_radius,
                                     x + dot_radius, y_positions[i] + dot_radius,
                                     fill='#ffffff', outline='#ffffff')
         
         # Draw connection lines
-        self.circuit_canvas.create_line(x, y_positions[0], x, y_positions[2],
+        min_y = min(y_positions)
+        max_y = max(y_positions)
+        self.circuit_canvas.create_line(x, min_y, x, max_y,
                                 fill='#ffffff', width=line_width)
         
         # Draw target (X symbol)
         target_radius = max(20, int(self.canvas_width / 70))
-        self.circuit_canvas.create_oval(x - target_radius, y_positions[2] - target_radius,
-                                x + target_radius, y_positions[2] + target_radius,
+        target_y = y_positions[2]
+        self.circuit_canvas.create_oval(x - target_radius, target_y - target_radius,
+                                x + target_radius, target_y + target_radius,
                                 fill='', outline='#ffffff', width=line_width)
         cross_size = target_radius * 0.6
-        self.circuit_canvas.create_line(x - cross_size, y_positions[2] - cross_size,
-                                x + cross_size, y_positions[2] + cross_size,
+        self.circuit_canvas.create_line(x - cross_size, target_y - cross_size,
+                                x + cross_size, target_y + cross_size,
                                 fill='#ffffff', width=line_width)
-        self.circuit_canvas.create_line(x - cross_size, y_positions[2] + cross_size,
-                                x + cross_size, y_positions[2] - cross_size,
+        self.circuit_canvas.create_line(x - cross_size, target_y + cross_size,
+                                x + cross_size, target_y - cross_size,
                                 fill='#ffffff', width=line_width)
 
     def run_circuit(self):
@@ -824,27 +1146,57 @@ class PuzzleMode:
             pass  # Already |000⟩
         # Add more initial states as needed
 
+    # def apply_gates(self, qc, level):
+    #     """Apply the placed gates to the quantum circuit"""
+    #     for gate in self.placed_gates:
+    #         if gate == 'H':
+    #             qc.h(0)
+    #         elif gate == 'X':
+    #             qc.x(0)
+    #         elif gate == 'Y':
+    #             qc.y(0)
+    #         elif gate == 'Z':
+    #             qc.z(0)
+    #         elif gate == 'S':
+    #             qc.s(0)
+    #         elif gate == 'T':
+    #             qc.t(0)
+    #         elif gate == 'CNOT' and level['qubits'] > 1:
+    #             qc.cx(0, 1)
+    #         elif gate == 'CZ' and level['qubits'] > 1:
+    #             qc.cz(0, 1)
+    #         elif gate == 'Toffoli' and level['qubits'] > 2:
+    #             qc.ccx(0, 1, 2)
+
     def apply_gates(self, qc, level):
         """Apply the placed gates to the quantum circuit"""
-        for gate in self.placed_gates:
+        for gate_info in self.placed_gates:
+            if isinstance(gate_info, str):
+                # Handle old format for backward compatibility
+                gate = gate_info
+                qubits = [0]
+            else:
+                gate = gate_info['gate']
+                qubits = gate_info['qubits']
+            
             if gate == 'H':
-                qc.h(0)
+                qc.h(qubits[0])
             elif gate == 'X':
-                qc.x(0)
+                qc.x(qubits[0])
             elif gate == 'Y':
-                qc.y(0)
+                qc.y(qubits[0])
             elif gate == 'Z':
-                qc.z(0)
+                qc.z(qubits[0])
             elif gate == 'S':
-                qc.s(0)
+                qc.s(qubits[0])
             elif gate == 'T':
-                qc.t(0)
-            elif gate == 'CNOT' and level['qubits'] > 1:
-                qc.cx(0, 1)
-            elif gate == 'CZ' and level['qubits'] > 1:
-                qc.cz(0, 1)
-            elif gate == 'Toffoli' and level['qubits'] > 2:
-                qc.ccx(0, 1, 2)
+                qc.t(qubits[0])
+            elif gate == 'CNOT' and len(qubits) >= 2:
+                qc.cx(qubits[0], qubits[1])  # control, target
+            elif gate == 'CZ' and len(qubits) >= 2:
+                qc.cz(qubits[0], qubits[1])
+            elif gate == 'Toffoli' and len(qubits) >= 3:
+                qc.ccx(qubits[0], qubits[1], qubits[2])  # control1, control2, target
 
     def check_solution(self, final_state, level):
         """Check if the solution is correct"""
