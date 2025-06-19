@@ -221,13 +221,6 @@ class QubitPuzzleGame:
                                 font=('Arial', normal_font_size), bg='#9b59b6', fg='#ffffff')
         tutorial_btn.place(relx=0.98, rely=0.02, anchor='ne')
 
-        # Add sandbox button - positioned next to tutorial button
-        sandbox_btn = tk.Button(main_frame, text="🛠️ Sandbox",
-                            command=lambda: [self.play_sound('button_click'), self.open_sandbox()],
-                            font=('Arial', normal_font_size), bg='#f39c12', fg='#ffffff')
-        sandbox_btn.place(relx=0.98, rely=0.08, anchor='ne')
-
-
         # Circuit area - Made adaptive
 
         circuit_frame = tk.Frame(main_frame, bg='#2a2a2a', relief=tk.RAISED, bd=3)
@@ -315,29 +308,6 @@ class QubitPuzzleGame:
         # Initialize sound effects after UI is created
         if self.sound_enabled:
             self.create_sound_effects_programmatically()
-
-    # def open_sandbox(self):
-    #     """Open the sandbox mode window"""
-    #     try:
-    #         from sandbox_mode import SandboxMode
-    #         sandbox_window = tk.Toplevel(self.root)
-    #         sandbox_app = SandboxMode(sandbox_window)
-    #     except ImportError:
-    #         messagebox.showerror("Error", "Sandbox mode module not found. Please create sandbox_mode.py")
-    #     except Exception as e:
-    #         messagebox.showerror("Error", f"Failed to open sandbox mode: {str(e)}")
-
-    def open_sandbox(self):
-        """Open the sandbox mode window"""
-        try:
-            from sandbox_mode import SandboxMode
-            sandbox_window = tk.Toplevel(self.root)
-            sandbox_app = SandboxMode(sandbox_window)
-        except ImportError:
-            messagebox.showerror("Error", "Sandbox mode module not found. Please create sandbox_mode.py")
-        except Exception as e:
-            messagebox.showerror("Error", f"Failed to open sandbox mode: {str(e)}")
-
 
     def create_default_levels(self):
         """Create default puzzle levels"""
