@@ -408,18 +408,76 @@ class PuzzleMode:
         single_gates = [gate for gate in available_gates if gate in ['H', 'X', 'Y', 'Z', 'S', 'T']]
         multi_gates = [gate for gate in available_gates if gate in ['CNOT', 'CZ', 'Toffoli']]
 
-        # Single-qubit gates section
-        if single_gates:
-            single_title = tk.Label(self.gates_container, text="Single-Qubit Gates:",
-                                  font=('Arial', 12, 'bold'), fg='#ffffff', bg='#2a2a2a')
+        # Store gates for toggle functionality
+        self.single_gates = single_gates
+        self.multi_gates = multi_gates
+        self.current_gate_view = 'single'  # Start with single-qubit gates
+
+        # Create toggle button if both types of gates are available
+        if single_gates and multi_gates:
+            toggle_frame = tk.Frame(self.gates_container, bg='#2a2a2a')
+            toggle_frame.pack(pady=(5, 15))
+
+            self.toggle_btn = tk.Button(toggle_frame, text="🔄 Show Multi-Qubit Gates",
+                                    command=self.toggle_gate_view,
+                                    font=('Arial', 11, 'bold'),
+                                    bg='#4ecdc4', fg='#000000',
+                                    padx=20, pady=8,
+                                    cursor='hand2', relief=tk.FLAT)
+            self.toggle_btn.pack()
+
+            # Add hover effect for toggle button
+            def on_toggle_enter(event):
+                self.toggle_btn.configure(bg='#ffffff', fg='#000000')
+            def on_toggle_leave(event):
+                self.toggle_btn.configure(bg='#4ecdc4', fg='#000000')
+
+            self.toggle_btn.bind("<Enter>", on_toggle_enter)
+            self.toggle_btn.bind("<Leave>", on_toggle_leave)
+
+        # Create container for gate display
+        self.gate_display_frame = tk.Frame(self.gates_container, bg='#2a2a2a')
+        self.gate_display_frame.pack(fill=tk.BOTH, expand=True)
+
+        # Show initial gate set
+        self.display_current_gates()
+
+    def display_current_gates(self):
+        """Display the current set of gates (single or multi-qubit)"""
+        # Clear existing gate display
+        for widget in self.gate_display_frame.winfo_children():
+            widget.destroy()
+
+        gate_colors = {
+            'H': '#ff6b6b', 'X': '#4ecdc4', 'Y': '#45b7d1', 'Z': '#96ceb4',
+            'S': '#feca57', 'T': '#ff9ff3', 'CNOT': '#ffeaa7', 'CZ': '#a29bfe',
+            'Toffoli': '#fd79a8'
+        }
+
+        gate_descriptions = {
+            'H': 'Hadamard',
+            'X': 'Pauli-X',
+            'Y': 'Pauli-Y',
+            'Z': 'Pauli-Z',
+            'S': 'S Gate',
+            'T': 'T Gate',
+            'CNOT': 'CNOT',
+            'CZ': 'CZ Gate',
+            'Toffoli': 'Toffoli'
+        }
+
+        if self.current_gate_view == 'single' and self.single_gates:
+            # Display single-qubit gates
+            single_title = tk.Label(self.gate_display_frame, text="Single-Qubit Gates:",
+                                font=('Arial', 12, 'bold'), fg='#ffffff', bg='#2a2a2a')
             single_title.pack(pady=(5, 10))
 
             # Create grid for single gates
-            single_frame = tk.Frame(self.gates_container, bg='#2a2a2a')
+            single_frame = tk.Frame(self.gate_display_frame, bg='#2a2a2a')
             single_frame.pack()
 
             cols = 3
-            for i, gate in enumerate(single_gates):
+            for i, gate in enumerate(self.single_gates):
                 row = i // cols
                 col = i % cols
                 
@@ -434,41 +492,163 @@ class PuzzleMode:
                 btn_container.pack(side=tk.LEFT, padx=8, pady=2)
 
                 btn = tk.Button(btn_container, text=gate,
-                              command=lambda g=gate: self.add_gate(g),
-                              font=('Arial', 12, 'bold'),
-                              bg=color, fg='#000000',
-                              width=8, height=2, cursor='hand2',
-                              relief=tk.FLAT, bd=0)
+                            command=lambda g=gate: self.add_gate(g),
+                            font=('Arial', 12, 'bold'),
+                            bg=color, fg='#000000',
+                            width=8, height=2, cursor='hand2',
+                            relief=tk.FLAT, bd=0)
                 btn.pack(padx=3, pady=3)
 
                 desc_label = tk.Label(btn_container, text=description,
                                     font=('Arial', 8), fg='#cccccc', bg='#3a3a3a')
                 desc_label.pack(pady=(0, 3))
 
-        # Multi-qubit gates section
-        if multi_gates:
-            multi_title = tk.Label(self.gates_container, text="Multi-Qubit Gates:",
-                                 font=('Arial', 12, 'bold'), fg='#ffffff', bg='#2a2a2a')
-            multi_title.pack(pady=(20, 10))
+                # Add hover effect
+                def create_hover_effect(button, orig_color):
+                    def on_enter(event):
+                        button.configure(bg='#ffffff')
+                    def on_leave(event):
+                        button.configure(bg=orig_color)
+                    return on_enter, on_leave
 
-            for gate in multi_gates:
+                on_enter, on_leave = create_hover_effect(btn, color)
+                btn.bind("<Enter>", on_enter)
+                btn.bind("<Leave>", on_leave)
+
+        elif self.current_gate_view == 'multi' and self.multi_gates:
+            # Display multi-qubit gates in grid layout (same as single gates)
+            multi_title = tk.Label(self.gate_display_frame, text="Multi-Qubit Gates:",
+                                font=('Arial', 12, 'bold'), fg='#ffffff', bg='#2a2a2a')
+            multi_title.pack(pady=(5, 10))
+
+            # Create grid for multi gates (same structure as single gates)
+            multi_frame = tk.Frame(self.gate_display_frame, bg='#2a2a2a')
+            multi_frame.pack()
+
+            cols = 3  # Same number of columns as single gates
+            for i, gate in enumerate(self.multi_gates):
+                row = i // cols
+                col = i % cols
+                
+                if col == 0:  # Create new row frame
+                    row_frame = tk.Frame(multi_frame, bg='#2a2a2a')
+                    row_frame.pack(pady=5)
+
                 color = gate_colors.get(gate, '#ffffff')
                 description = gate_descriptions.get(gate, '')
 
-                btn_container = tk.Frame(self.gates_container, bg='#3a3a3a', relief=tk.RAISED, bd=1)
-                btn_container.pack(fill=tk.X, pady=5, padx=20)
+                btn_container = tk.Frame(row_frame, bg='#3a3a3a', relief=tk.RAISED, bd=1)
+                btn_container.pack(side=tk.LEFT, padx=8, pady=2)
 
                 btn = tk.Button(btn_container, text=gate,
-                              command=lambda g=gate: self.add_gate(g),
-                              font=('Arial', 12, 'bold'),
-                              bg=color, fg='#000000',
-                              height=2, cursor='hand2',
-                              relief=tk.FLAT, bd=0)
-                btn.pack(fill=tk.X, padx=5, pady=3)
+                            command=lambda g=gate: self.add_gate(g),
+                            font=('Arial', 12, 'bold'),
+                            bg=color, fg='#000000',
+                            width=8, height=2, cursor='hand2',  # Same size as single gates
+                            relief=tk.FLAT, bd=0)
+                btn.pack(padx=3, pady=3)
+
+                desc_label = tk.Label(btn_container, text=description,
+                                    font=('Arial', 8), fg='#cccccc', bg='#3a3a3a')
+                desc_label.pack(pady=(0, 3))
+
+                # Add hover effect
+                def create_hover_effect_multi(button, orig_color):
+                    def on_enter(event):
+                        button.configure(bg='#ffffff')
+                    def on_leave(event):
+                        button.configure(bg=orig_color)
+                    return on_enter, on_leave
+
+                on_enter, on_leave = create_hover_effect_multi(btn, color)
+                btn.bind("<Enter>", on_enter)
+                btn.bind("<Leave>", on_leave)
+
+        # If only one type of gates is available, show them without toggle
+        elif not self.multi_gates and self.single_gates:
+            # Only single gates available, show them directly
+            self.current_gate_view = 'single'
+            single_title = tk.Label(self.gate_display_frame, text="Available Gates:",
+                                font=('Arial', 12, 'bold'), fg='#ffffff', bg='#2a2a2a')
+            single_title.pack(pady=(5, 10))
+
+            single_frame = tk.Frame(self.gate_display_frame, bg='#2a2a2a')
+            single_frame.pack()
+
+            cols = 3
+            for i, gate in enumerate(self.single_gates):
+                row = i // cols
+                col = i % cols
+                
+                if col == 0:
+                    row_frame = tk.Frame(single_frame, bg='#2a2a2a')
+                    row_frame.pack(pady=5)
+
+                color = gate_colors.get(gate, '#ffffff')
+                description = gate_descriptions.get(gate, '')
+
+                btn_container = tk.Frame(row_frame, bg='#3a3a3a', relief=tk.RAISED, bd=1)
+                btn_container.pack(side=tk.LEFT, padx=8, pady=2)
+
+                btn = tk.Button(btn_container, text=gate,
+                            command=lambda g=gate: self.add_gate(g),
+                            font=('Arial', 12, 'bold'),
+                            bg=color, fg='#000000',
+                            width=8, height=2, cursor='hand2',
+                            relief=tk.FLAT, bd=0)
+                btn.pack(padx=3, pady=3)
+
+                desc_label = tk.Label(btn_container, text=description,
+                                    font=('Arial', 8), fg='#cccccc', bg='#3a3a3a')
+                desc_label.pack(pady=(0, 3))
+
+        elif not self.single_gates and self.multi_gates:
+            # Only multi gates available, show them directly in grid
+            self.current_gate_view = 'multi'
+            multi_title = tk.Label(self.gate_display_frame, text="Available Gates:",
+                                font=('Arial', 12, 'bold'), fg='#ffffff', bg='#2a2a2a')
+            multi_title.pack(pady=(5, 10))
+
+            multi_frame = tk.Frame(self.gate_display_frame, bg='#2a2a2a')
+            multi_frame.pack()
+
+            cols = 3
+            for i, gate in enumerate(self.multi_gates):
+                row = i // cols
+                col = i % cols
+                
+                if col == 0:
+                    row_frame = tk.Frame(multi_frame, bg='#2a2a2a')
+                    row_frame.pack(pady=5)
+
+                color = gate_colors.get(gate, '#ffffff')
+                description = gate_descriptions.get(gate, '')
+
+                btn_container = tk.Frame(row_frame, bg='#3a3a3a', relief=tk.RAISED, bd=1)
+                btn_container.pack(side=tk.LEFT, padx=8, pady=2)
+
+                btn = tk.Button(btn_container, text=gate,
+                            command=lambda g=gate: self.add_gate(g),
+                            font=('Arial', 12, 'bold'),
+                            bg=color, fg='#000000',
+                            width=8, height=2, cursor='hand2',
+                            relief=tk.FLAT, bd=0)
+                btn.pack(padx=3, pady=3)
 
                 desc_label = tk.Label(btn_container, text=description,
                                     font=('Arial', 9), fg='#cccccc', bg='#3a3a3a')
                 desc_label.pack(pady=(0, 5))
+
+    def toggle_gate_view(self):
+        """Toggle between single-qubit and multi-qubit gate views"""
+        if self.current_gate_view == 'single':
+            self.current_gate_view = 'multi'
+            self.toggle_btn.config(text="🔄 Show Single-Qubit Gates")
+        else:
+            self.current_gate_view = 'single'
+            self.toggle_btn.config(text="🔄 Show Multi-Qubit Gates")
+        
+        self.display_current_gates()
 
     def add_gate(self, gate):
         """Add a gate to the circuit"""
@@ -680,27 +860,218 @@ class PuzzleMode:
 
     def check_solution(self, state_vector, level):
         """Check if the current state matches the target state"""
-        # This is a simplified check - you might want to implement more sophisticated comparison
         target_state = level['target_state']
         state_data = state_vector.data
-        
-        # Basic target state checking
+        tolerance = 0.01  # Tolerance for floating point comparisons
+
+        # Single qubit states
         if target_state == '|1⟩' and level['qubits'] == 1:
-            return abs(state_data[1]) > 0.99  # |1⟩ state
+            # |1⟩ state: [0, 1]
+            return (abs(state_data[1]) > 0.99 and abs(state_data[0]) < tolerance and 
+                    abs(np.real(state_data[1]) - 1.0) < tolerance and
+                    abs(np.imag(state_data[1])) < tolerance)
+
         elif target_state == '|0⟩' and level['qubits'] == 1:
-            return abs(state_data[0]) > 0.99  # |0⟩ state
+            # |0⟩ state: [1, 0]
+            return (abs(state_data[0]) > 0.99 and abs(state_data[1]) < tolerance and 
+                    abs(np.real(state_data[0]) - 1.0) < tolerance and
+                    abs(np.imag(state_data[0])) < tolerance)
+
         elif target_state == '|+⟩' and level['qubits'] == 1:
-            return abs(abs(state_data[0]) - abs(state_data[1])) < 0.01  # Equal superposition
+            # |+⟩ = (|0⟩ + |1⟩)/√2: [1/√2, 1/√2]
+            expected_amp = 1/np.sqrt(2)
+            return (abs(abs(state_data[0]) - expected_amp) < tolerance and 
+                    abs(abs(state_data[1]) - expected_amp) < tolerance and
+                    abs(np.real(state_data[0]) - expected_amp) < tolerance and
+                    abs(np.imag(state_data[0])) < tolerance and
+                    abs(np.real(state_data[1]) - expected_amp) < tolerance and
+                    abs(np.imag(state_data[1])) < tolerance)
+
         elif target_state == '|-⟩' and level['qubits'] == 1:
-            return abs(abs(state_data[0]) - abs(state_data[1])) < 0.01  # Equal superposition with phase
+            # |-⟩ = (|0⟩ - |1⟩)/√2: [1/√2, -1/√2]
+            expected_amp = 1/np.sqrt(2)
+            return (abs(abs(state_data[0]) - expected_amp) < tolerance and 
+                    abs(abs(state_data[1]) - expected_amp) < tolerance and
+                    abs(np.real(state_data[0]) - expected_amp) < tolerance and
+                    abs(np.imag(state_data[0])) < tolerance and
+                    abs(np.real(state_data[1]) + expected_amp) < tolerance and
+                    abs(np.imag(state_data[1])) < tolerance)
+
+        elif target_state == '|i·1⟩' and level['qubits'] == 1:
+            # Y|0⟩ = i|1⟩: [0, i]
+            return (abs(state_data[0]) < tolerance and
+                    abs(state_data[1]) > 0.99 and 
+                    abs(np.real(state_data[1])) < tolerance and
+                    abs(np.imag(state_data[1]) - 1.0) < tolerance)
+
+        elif target_state == '|+i⟩' and level['qubits'] == 1:
+            # S|+⟩ = (|0⟩ + i|1⟩)/√2: [1/√2, i/√2]
+            expected_amp = 1/np.sqrt(2)
+            return (abs(abs(state_data[0]) - expected_amp) < tolerance and 
+                    abs(abs(state_data[1]) - expected_amp) < tolerance and
+                    abs(np.real(state_data[0]) - expected_amp) < tolerance and
+                    abs(np.imag(state_data[0])) < tolerance and
+                    abs(np.real(state_data[1])) < tolerance and
+                    abs(np.imag(state_data[1]) - expected_amp) < tolerance)
+
+        elif target_state == '|T+⟩' and level['qubits'] == 1:
+            # T|+⟩ = (|0⟩ + e^(iπ/4)|1⟩)/√2
+            expected_amp = 1/np.sqrt(2)
+            expected_phase = np.exp(1j * np.pi / 4)  # e^(iπ/4)
+            expected_1_state = expected_amp * expected_phase
+            return (abs(abs(state_data[0]) - expected_amp) < tolerance and 
+                    abs(abs(state_data[1]) - expected_amp) < tolerance and
+                    abs(np.real(state_data[0]) - expected_amp) < tolerance and
+                    abs(np.imag(state_data[0])) < tolerance and
+                    abs(state_data[1] - expected_1_state) < tolerance)
+
+        # Two qubit states
         elif target_state == '|11⟩' and level['qubits'] == 2:
-            return abs(state_data[3]) > 0.99  # |11⟩ state
+            # |11⟩ state: [0, 0, 0, 1]
+            return (abs(state_data[3]) > 0.99 and
+                    abs(state_data[0]) < tolerance and abs(state_data[1]) < tolerance and 
+                    abs(state_data[2]) < tolerance and
+                    abs(np.real(state_data[3]) - 1.0) < tolerance and
+                    abs(np.imag(state_data[3])) < tolerance)
+
+        elif target_state == '|++⟩' and level['qubits'] == 2:
+            # |++⟩ = |+⟩⊗|+⟩ = (|00⟩ + |01⟩ + |10⟩ + |11⟩)/2
+            expected_amp = 0.5
+            return all(abs(abs(state_data[i]) - expected_amp) < tolerance and
+                        abs(np.real(state_data[i]) - expected_amp) < tolerance and
+                        abs(np.imag(state_data[i])) < tolerance
+                        for i in range(4))
+
+        elif target_state == '|Φ+⟩' and level['qubits'] == 2:
+            # |Φ+⟩ = (|00⟩ + |11⟩)/√2: [1/√2, 0, 0, 1/√2]
+            expected_amp = 1/np.sqrt(2)
+            return (abs(abs(state_data[0]) - expected_amp) < tolerance and
+                    abs(state_data[1]) < tolerance and abs(state_data[2]) < tolerance and
+                    abs(abs(state_data[3]) - expected_amp) < tolerance and
+                    abs(np.real(state_data[0]) - expected_amp) < tolerance and
+                    abs(np.imag(state_data[0])) < tolerance and
+                    abs(np.real(state_data[3]) - expected_amp) < tolerance and
+                    abs(np.imag(state_data[3])) < tolerance)
+
+        elif target_state == '|Φ-⟩' and level['qubits'] == 2:
+            # |Φ-⟩ = (|00⟩ - |11⟩)/√2: [1/√2, 0, 0, -1/√2]
+            expected_amp = 1/np.sqrt(2)
+            return (abs(abs(state_data[0]) - expected_amp) < tolerance and
+                    abs(state_data[1]) < tolerance and abs(state_data[2]) < tolerance and
+                    abs(abs(state_data[3]) - expected_amp) < tolerance and
+                    abs(np.real(state_data[0]) - expected_amp) < tolerance and
+                    abs(np.imag(state_data[0])) < tolerance and
+                    abs(np.real(state_data[3]) + expected_amp) < tolerance and
+                    abs(np.imag(state_data[3])) < tolerance)
+
+        elif target_state == '|Ψ+⟩' and level['qubits'] == 2:
+            # |Ψ+⟩ = (|01⟩ + |10⟩)/√2: [0, 1/√2, 1/√2, 0]
+            expected_amp = 1/np.sqrt(2)
+            return (abs(state_data[0]) < tolerance and
+                    abs(abs(state_data[1]) - expected_amp) < tolerance and
+                    abs(abs(state_data[2]) - expected_amp) < tolerance and
+                    abs(state_data[3]) < tolerance and
+                    abs(np.real(state_data[1]) - expected_amp) < tolerance and
+                    abs(np.imag(state_data[1])) < tolerance and
+                    abs(np.real(state_data[2]) - expected_amp) < tolerance and
+                    abs(np.imag(state_data[2])) < tolerance)
+
+        elif target_state == '|Ψ-⟩' and level['qubits'] == 2:
+            # |Ψ-⟩ = (|01⟩ - |10⟩)/√2: [0, 1/√2, -1/√2, 0]
+            expected_amp = 1/np.sqrt(2)
+            return (abs(state_data[0]) < tolerance and
+                    abs(abs(state_data[1]) - expected_amp) < tolerance and
+                    abs(abs(state_data[2]) - expected_amp) < tolerance and
+                    abs(state_data[3]) < tolerance and
+                    abs(np.real(state_data[1]) - expected_amp) < tolerance and
+                    abs(np.imag(state_data[1])) < tolerance and
+                    abs(np.real(state_data[2]) + expected_amp) < tolerance and
+                    abs(np.imag(state_data[2])) < tolerance)
+
+        elif target_state == '|-0⟩' and level['qubits'] == 2:
+            # |-0⟩ = |-⟩ ⊗ |0⟩ = (|00⟩ - |10⟩)/√2: [1/√2, 0, -1/√2, 0]
+            expected_amp = 1/np.sqrt(2)
+            return (abs(abs(state_data[0]) - expected_amp) < tolerance and
+                    abs(state_data[1]) < tolerance and
+                    abs(abs(state_data[2]) - expected_amp) < tolerance and
+                    abs(state_data[3]) < tolerance and
+                    abs(np.real(state_data[0]) - expected_amp) < tolerance and
+                    abs(np.imag(state_data[0])) < tolerance and
+                    abs(np.real(state_data[2]) + expected_amp) < tolerance and
+                    abs(np.imag(state_data[2])) < tolerance)
+
+        # Three qubit states
         elif target_state == '|111⟩' and level['qubits'] == 3:
-            return abs(state_data[7]) > 0.99  # |111⟩ state
-        
-        # For more complex target states, you might need to implement specific checks
-        # This is a placeholder that accepts any state for now
-        return True
+            # |111⟩ state: [0,0,0,0,0,0,0,1]
+            return (abs(state_data[7]) > 0.99 and
+                    all(abs(state_data[i]) < tolerance for i in range(7)) and
+                    abs(np.real(state_data[7]) - 1.0) < tolerance and
+                    abs(np.imag(state_data[7])) < tolerance)
+
+        elif target_state == '|0Φ+⟩' and level['qubits'] == 3:
+            # |0⟩ ⊗ |Φ+⟩ = |0⟩ ⊗ (|00⟩ + |11⟩)/√2 = (|000⟩ + |011⟩)/√2
+            expected_amp = 1/np.sqrt(2)
+            return (abs(abs(state_data[0]) - expected_amp) < tolerance and  # |000⟩
+                    abs(state_data[1]) < tolerance and abs(state_data[2]) < tolerance and
+                    abs(abs(state_data[3]) - expected_amp) < tolerance and  # |011⟩
+                    abs(state_data[4]) < tolerance and abs(state_data[5]) < tolerance and
+                    abs(state_data[6]) < tolerance and abs(state_data[7]) < tolerance and
+                    abs(np.real(state_data[0]) - expected_amp) < tolerance and
+                    abs(np.imag(state_data[0])) < tolerance and
+                    abs(np.real(state_data[3]) - expected_amp) < tolerance and
+                    abs(np.imag(state_data[3])) < tolerance)
+
+        elif target_state == '|GHZ⟩' and level['qubits'] == 3:
+            # |GHZ⟩ = (|000⟩ + |111⟩)/√2: [1/√2, 0, 0, 0, 0, 0, 0, 1/√2]
+            expected_amp = 1/np.sqrt(2)
+            return (abs(abs(state_data[0]) - expected_amp) < tolerance and  # |000⟩
+                    abs(state_data[1]) < tolerance and abs(state_data[2]) < tolerance and
+                    abs(state_data[3]) < tolerance and abs(state_data[4]) < tolerance and
+                    abs(state_data[5]) < tolerance and abs(state_data[6]) < tolerance and
+                    abs(abs(state_data[7]) - expected_amp) < tolerance and  # |111⟩
+                    abs(np.real(state_data[0]) - expected_amp) < tolerance and
+                    abs(np.imag(state_data[0])) < tolerance and
+                    abs(np.real(state_data[7]) - expected_amp) < tolerance and
+                    abs(np.imag(state_data[7])) < tolerance)
+
+        # Custom/Placeholder states - these need specific implementations
+        elif target_state == '|W⟩' and level['qubits'] == 3:
+            # W state = (|001⟩ + |010⟩ + |100⟩)/√3
+            expected_amp = 1/np.sqrt(3)
+            return (abs(state_data[0]) < tolerance and  # |000⟩
+                    abs(abs(state_data[1]) - expected_amp) < tolerance and  # |001⟩
+                    abs(abs(state_data[2]) - expected_amp) < tolerance and  # |010⟩
+                    abs(state_data[3]) < tolerance and  # |011⟩
+                    abs(abs(state_data[4]) - expected_amp) < tolerance and  # |100⟩
+                    abs(state_data[5]) < tolerance and  # |101⟩
+                    abs(state_data[6]) < tolerance and  # |110⟩
+                    abs(state_data[7]) < tolerance)  # |111⟩
+
+        # Placeholder implementations for undefined states
+        # These return True for now but should be properly defined
+        elif target_state in ['|err⟩', '|QFT⟩', '|MaxEnt⟩', '|Secret⟩', 
+                                '|Interference⟩', '|ErrorCode⟩', '|Ultimate⟩']:
+            # For these custom states, we need to define what they actually represent
+            # For now, return True to allow level progression during development
+            print(f"Warning: Target state '{target_state}' not fully implemented")
+            
+            # Placeholder logic - you can replace these with actual state definitions
+            if target_state == '|QFT⟩' and level['qubits'] == 2:
+                # 2-qubit QFT of |00⟩ should give equal superposition with phases
+                return all(abs(abs(state_data[i]) - 0.5) < tolerance for i in range(4))
+            
+            elif target_state == '|MaxEnt⟩' and level['qubits'] == 4:
+                # Maximally entangled 4-qubit state - check for equal superposition
+                expected_amp = 1/4
+                return all(abs(abs(state_data[i]) - expected_amp) < tolerance for i in range(16))
+            
+            # For other undefined states, return True (temporary)
+            return True
+
+        # Default case - should not happen with proper target states
+        else:
+            print(f"Warning: Unknown target state '{target_state}' for {level['qubits']} qubits")
+            return False
 
     def display_circuit_results(self, state_vector, level):
         """Display the results of running the circuit"""
