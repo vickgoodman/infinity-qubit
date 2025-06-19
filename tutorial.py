@@ -21,7 +21,7 @@ class TutorialWindow:
         # Create the window as a Toplevel but make it independent
         self.window = tk.Toplevel(parent)
         self.window.title("🎓 Quantum Gates Tutorial")
-        self.window.geometry("900x700")
+        self.window.geometry("1920x1080")
         self.window.configure(bg='#1a1a1a')
         self.window.resizable(False, False)
         
@@ -112,6 +112,7 @@ class TutorialWindow:
         
         # Play welcome sound
         # self.play_sound('tutorial_open')
+        self.play_sound('clear')
 
     def init_sound_system(self):
         """Initialize the sound system (same as puzzle_mode)"""
@@ -134,7 +135,7 @@ class TutorialWindow:
                 'success': 'sounds/success.wav',
                 'error': 'sounds/error.wav',
                 'clear': 'sounds/clear.wav',
-                'tutorial_open': None,
+                'tutorial_open': 'sounds/clear.wav',
                 'gate_hover': None
             }
             
@@ -188,8 +189,8 @@ class TutorialWindow:
         screen_height = self.window.winfo_screenheight()
         
         # Get window dimensions
-        window_width = 900
-        window_height = 700
+        window_width = 1100
+        window_height = 800
         
         # Calculate position
         x = (screen_width - window_width) // 2
@@ -445,6 +446,8 @@ class GateTutorial:
         
         # Play welcome sound
         # self.play_sound('tutorial_open')
+        self.play_sound('clear')
+
 
     def init_sound_system(self):
         """Initialize the sound system (same as TutorialWindow)"""
