@@ -73,28 +73,34 @@ class GameModeSelection:
         main_frame = tk.Frame(self.root, bg='#1a1a1a')
         main_frame.pack(fill=tk.BOTH, expand=True, padx=40, pady=30)
         
-        # Title
-        title_label = tk.Label(main_frame, text="🔬 Infinity Qubit",
+        # Configure grid weights
+        main_frame.grid_rowconfigure(1, weight=1)  # Make buttons area expandable
+        main_frame.grid_columnconfigure(0, weight=1)
+        
+        # Title section
+        title_frame = tk.Frame(main_frame, bg='#1a1a1a')
+        title_frame.grid(row=0, column=0, sticky='ew', pady=(20, 30))
+        
+        title_label = tk.Label(title_frame, text="🔬 Infinity Qubit",
                             font=('Arial', 32, 'bold'), 
                             fg='#00ff88', bg='#1a1a1a')
-        title_label.pack(pady=(20, 10))
+        title_label.pack()
         
-        # Subtitle
-        subtitle_label = tk.Label(main_frame, text="Choose Your Quantum Adventure",
+        subtitle_label = tk.Label(title_frame, text="Choose Your Quantum Adventure",
                                 font=('Arial', 16), 
                                 fg='#ffffff', bg='#1a1a1a')
-        subtitle_label.pack(pady=(0, 30))
+        subtitle_label.pack()
         
         # Game mode buttons container
         buttons_frame = tk.Frame(main_frame, bg='#1a1a1a')
-        buttons_frame.pack(expand=True, fill=tk.BOTH, pady=20)
+        buttons_frame.grid(row=1, column=0, sticky='nsew', pady=20)
         
         # Create game mode buttons
         self.create_game_mode_buttons(buttons_frame)
         
         # Footer
         footer_frame = tk.Frame(main_frame, bg='#1a1a1a')
-        footer_frame.pack(side=tk.BOTTOM, fill=tk.X, pady=20)
+        footer_frame.grid(row=2, column=0, sticky='ew', pady=20)
         
         # Exit button
         exit_btn = tk.Button(footer_frame, text="❌ Exit Game",
@@ -110,8 +116,6 @@ class GameModeSelection:
                                 font=('Arial', 10), 
                                 fg='#888888', bg='#1a1a1a')
         version_label.pack(side=tk.LEFT)
-        
-        print("UI created successfully")
 
     def create_game_mode_buttons(self, parent):
         """Create the game mode selection buttons"""
