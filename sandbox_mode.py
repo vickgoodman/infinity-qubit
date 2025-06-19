@@ -6,46 +6,6 @@ from qiskit.quantum_info import Statevector # type: ignore
 import pygame # type: ignore
 
 class SandboxMode:
-    # def __init__(self, root):
-    #     self.root = root
-    #     self.root.title("Quantum Sandbox Mode")
-        
-    #     # Initialize sound system (optional - can reuse from main)
-    #     try:
-    #         if not pygame.mixer.get_init():
-    #             pygame.mixer.init()
-    #         self.sound_enabled = True
-    #     except:
-    #         self.sound_enabled = False
-        
-    #     # Get screen dimensions for adaptive sizing
-    #     screen_width = self.root.winfo_screenwidth()
-    #     screen_height = self.root.winfo_screenheight()
-        
-    #     window_width = int(screen_width * 0.8)
-    #     window_height = int(screen_height * 0.8)
-        
-    #     # Center the window
-    #     x = (screen_width - window_width) // 2
-    #     y = (screen_height - window_height) // 2
-        
-    #     self.root.geometry(f"{window_width}x{window_height}+{x}+{y}")
-    #     self.root.configure(bg='#1a1a1a')
-        
-    #     # Store dimensions
-    #     self.window_width = window_width
-    #     self.window_height = window_height
-        
-    #     # Sandbox state
-    #     self.num_qubits = 1
-    #     self.placed_gates = []
-    #     self.initial_state = "|0⟩"
-    #     self.available_gates = ["H", "X", "Y", "Z", "S", "T", "CNOT", "CZ", "Toffoli"]
-        
-    #     # Setup UI
-    #     self.setup_ui()
-    #     self.update_circuit_display()
-
     def __init__(self, root):
         self.root = root
         self.root.title("Quantum Sandbox Mode")
@@ -458,19 +418,6 @@ class SandboxMode:
                                 font=('Arial', 9, 'bold'), bg='#fd79a8', fg='#000000',
                                 width=6, height=1)
             toffoli_btn.pack(side=tk.LEFT, padx=5)
-
-
-    # def add_single_gate(self, gate):
-    #     """Add a single-qubit gate to the selected qubit"""
-    #     target_qubit = self.target_qubit_var.get()
-        
-    #     if target_qubit >= self.num_qubits:
-    #         messagebox.showwarning("Warning", "Invalid target qubit selected")
-    #         return
-        
-    #     self.placed_gates.append((gate, [target_qubit]))
-    #     self.update_circuit_display()
-    #     self.play_gate_sound()
     
     def add_single_gate(self, gate):
         """Add a single-qubit gate to the selected qubit"""
@@ -484,27 +431,6 @@ class SandboxMode:
         self.placed_gates.append((gate, [target_qubit]))
         self.update_circuit_display()
         self.play_sound('gate_place', self.play_gate_sound_fallback)
-
-    # def add_cnot_gate(self):
-    #     """Add a CNOT gate"""
-    #     if self.num_qubits < 2:
-    #         messagebox.showwarning("Warning", "CNOT gate requires at least 2 qubits")
-    #         return
-        
-    #     control = self.cnot_control_var.get()
-    #     target = self.cnot_target_var.get()
-        
-    #     if control == target:
-    #         messagebox.showwarning("Warning", "Control and target qubits must be different")
-    #         return
-        
-    #     if control >= self.num_qubits or target >= self.num_qubits:
-    #         messagebox.showwarning("Warning", "Invalid qubit selection")
-    #         return
-        
-    #     self.placed_gates.append(('CNOT', [control, target]))
-    #     self.update_circuit_display()
-    #     self.play_gate_sound()
 
     def add_cnot_gate(self):
         """Add a CNOT gate"""
@@ -530,28 +456,6 @@ class SandboxMode:
         self.update_circuit_display()
         self.play_sound('gate_place', self.play_gate_sound_fallback)
 
-
-    # def add_cz_gate(self):
-    #     """Add a CZ gate"""
-    #     if self.num_qubits < 2:
-    #         messagebox.showwarning("Warning", "CZ gate requires at least 2 qubits")
-    #         return
-        
-    #     control = self.cz_control_var.get()
-    #     target = self.cz_target_var.get()
-        
-    #     if control == target:
-    #         messagebox.showwarning("Warning", "Control and target qubits must be different")
-    #         return
-        
-    #     if control >= self.num_qubits or target >= self.num_qubits:
-    #         messagebox.showwarning("Warning", "Invalid qubit selection")
-    #         return
-        
-    #     self.placed_gates.append(('CZ', [control, target]))
-    #     self.update_circuit_display()
-    #     self.play_gate_sound()
-
     def add_cz_gate(self):
         """Add a CZ gate"""
         if self.num_qubits < 2:
@@ -575,29 +479,6 @@ class SandboxMode:
         self.placed_gates.append(('CZ', [control, target]))
         self.update_circuit_display()
         self.play_sound('gate_place', self.play_gate_sound_fallback)
-
-
-    # def add_toffoli_gate(self):
-    #     """Add a Toffoli gate"""
-    #     if self.num_qubits < 3:
-    #         messagebox.showwarning("Warning", "Toffoli gate requires at least 3 qubits")
-    #         return
-        
-    #     c1 = self.toffoli_c1_var.get()
-    #     c2 = self.toffoli_c2_var.get()
-    #     target = self.toffoli_target_var.get()
-        
-    #     if len(set([c1, c2, target])) != 3:
-    #         messagebox.showwarning("Warning", "All three qubits must be different")
-    #         return
-        
-    #     if c1 >= self.num_qubits or c2 >= self.num_qubits or target >= self.num_qubits:
-    #         messagebox.showwarning("Warning", "Invalid qubit selection")
-    #         return
-        
-    #     self.placed_gates.append(('Toffoli', [c1, c2, target]))
-    #     self.update_circuit_display()
-    #     self.play_gate_sound()
 
     def add_toffoli_gate(self):
         """Add a Toffoli gate"""
@@ -623,23 +504,6 @@ class SandboxMode:
         self.placed_gates.append(('Toffoli', [c1, c2, target]))
         self.update_circuit_display()
         self.play_sound('gate_place', self.play_gate_sound_fallback)
-
-
-    # def play_gate_sound(self):
-    #     """Play sound when gate is added"""
-    #     if self.sound_enabled:
-    #         try:
-    #             frequency = 440
-    #             duration = 0.1
-    #             sample_rate = 22050
-    #             frames = int(duration * sample_rate)
-    #             arr = np.sin(2 * np.pi * frequency * np.linspace(0, duration, frames))
-    #             arr = (arr * 16383).astype(np.int16)
-    #             sound = pygame.sndarray.make_sound(arr)
-    #             sound.set_volume(0.3)
-    #             sound.play()
-    #         except:
-    #             pass
 
     def setup_action_buttons(self, parent):
         """Setup action buttons"""
@@ -718,13 +582,6 @@ class SandboxMode:
             except:
                 pass
     
-    # def clear_circuit(self):
-    #     """Clear all gates from the circuit"""
-    #     self.placed_gates = []
-    #     self.update_circuit_display()
-    #     self.results_text.delete(1.0, tk.END)
-    #     self.results_text.insert(tk.END, "Circuit cleared. Ready for new gates.\n")
-    
     def clear_circuit(self):
         """Clear all gates from the circuit"""
         self.placed_gates = []
@@ -732,13 +589,6 @@ class SandboxMode:
         self.results_text.delete(1.0, tk.END)
         self.results_text.insert(tk.END, "Circuit cleared. Ready for new gates.\n")
         self.play_sound('clear', self.play_clear_sound_fallback)
-
-
-    # def undo_gate(self):
-    #     """Remove the last placed gate"""
-    #     if self.placed_gates:
-    #         self.placed_gates.pop()
-    #         self.update_circuit_display()
 
     def undo_gate(self):
         """Remove the last placed gate"""
@@ -927,46 +777,6 @@ class SandboxMode:
                         self.circuit_canvas.create_oval(x - 8, target_y - 8,
                                                        x + 8, target_y + 8,
                                                        fill='#ffffff', outline='#ffffff')
-    
-    # def run_circuit(self):
-    #     """Execute the quantum circuit and display results"""
-    #     try:
-    #         # Create quantum circuit
-    #         qc = QuantumCircuit(self.num_qubits)
-            
-    #         # Set initial state
-    #         self.set_initial_state(qc)
-            
-    #         # Apply gates
-    #         for gate, qubits in self.placed_gates:
-    #             if gate == 'H' and len(qubits) == 1:
-    #                 qc.h(qubits[0])
-    #             elif gate == 'X' and len(qubits) == 1:
-    #                 qc.x(qubits[0])
-    #             elif gate == 'Y' and len(qubits) == 1:
-    #                 qc.y(qubits[0])
-    #             elif gate == 'Z' and len(qubits) == 1:
-    #                 qc.z(qubits[0])
-    #             elif gate == 'S' and len(qubits) == 1:
-    #                 qc.s(qubits[0])
-    #             elif gate == 'T' and len(qubits) == 1:
-    #                 qc.t(qubits[0])
-    #             elif gate == 'CNOT' and len(qubits) == 2:
-    #                 qc.cx(qubits[0], qubits[1])
-    #             elif gate == 'CZ' and len(qubits) == 2:
-    #                 qc.cz(qubits[0], qubits[1])
-    #             elif gate == 'Toffoli' and len(qubits) == 3:
-    #                 qc.ccx(qubits[0], qubits[1], qubits[2])
-            
-    #         # Get final state
-    #         final_state = Statevector(qc)
-            
-    #         # Display results
-    #         self.display_results(final_state)
-            
-    #     except Exception as e:
-    #         self.results_text.delete(1.0, tk.END)
-    #         self.results_text.insert(tk.END, f"Error executing circuit: {str(e)}\n")
 
     def run_circuit(self):
         """Execute the quantum circuit and display results"""
