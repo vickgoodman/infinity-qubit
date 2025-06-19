@@ -3,7 +3,10 @@ from tkinter import ttk, messagebox
 import numpy as np
 from qiskit import QuantumCircuit # type: ignore
 from qiskit.quantum_info import Statevector # type: ignore
+from qiskit.visualization import plot_bloch_multivector, plot_state_qsphere # type: ignore
 import pygame # type: ignore
+import matplotlib.pyplot as plt # type: ignore
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg # type: ignore
 
 class SandboxMode:
     def __init__(self, root):
@@ -404,7 +407,7 @@ class SandboxMode:
         action_title.pack(pady=(10, 15))
 
         # Create buttons container with fixed width and proper height
-        action_frame = tk.Frame(parent, bg='#2a2a2a', width=250, height=300)
+        action_frame = tk.Frame(parent, bg='#2a2a2a', width=250, height=350)  # Increased height for new button
         action_frame.pack(pady=(0, 15), padx=15)
         action_frame.pack_propagate(False)  # Maintain fixed size
 
@@ -412,19 +415,20 @@ class SandboxMode:
         buttons_data = [
             ("🚀 Run Circuit", self.run_circuit, '#00ff88', '#000000'),
             ("🔄 Clear Circuit", self.clear_circuit, '#ff6b6b', '#ffffff'),
-            ("↶ Undo Last", self.undo_gate, '#f39c12', '#000000')
+            ("↶ Undo Last", self.undo_gate, '#f39c12', '#000000'),
+            ("🌐 3D Visualizer", self.open_3d_visualizer, '#9b59b6', '#ffffff')  # New button
         ]
 
         # Create buttons in a vertical layout for the middle section
         for i, (text, command, bg_color, fg_color) in enumerate(buttons_data):
             # Button container with proper spacing
             btn_container = tk.Frame(action_frame, bg='#3a3a3a', relief=tk.RAISED, bd=2)
-            btn_container.pack(fill=tk.X, pady=12, padx=5)
+            btn_container.pack(fill=tk.X, pady=8, padx=5)  # Reduced padding for 4 buttons
 
             # Create the actual button
             btn = tk.Button(btn_container, text=text, command=command,
                            font=('Arial', 11, 'bold'), bg=bg_color, fg=fg_color,
-                           padx=15, pady=12, cursor='hand2', relief=tk.FLAT, bd=0,
+                           padx=15, pady=10, cursor='hand2', relief=tk.FLAT, bd=0,  # Reduced pady
                            activebackground='#ffffff', activeforeground='#000000')
             btn.pack(padx=4, pady=4, fill=tk.X)
 
@@ -436,6 +440,8 @@ class SandboxMode:
                     if orig_color == '#00ff88':
                         button.configure(bg='#ffffff', fg='#000000')
                     elif orig_color == '#ff6b6b':
+                        button.configure(bg='#ffffff', fg='#000000')
+                    elif orig_color == '#9b59b6':  # New color for 3D visualizer
                         button.configure(bg='#ffffff', fg='#000000')
                     else:
                         button.configure(bg='#ffffff', fg='#000000')
@@ -451,7 +457,7 @@ class SandboxMode:
 
         # Add status info at the bottom of the controls
         status_frame = tk.Frame(action_frame, bg='#3a3a3a', relief=tk.SUNKEN, bd=1)
-        status_frame.pack(fill=tk.X, pady=(20, 0), padx=5)
+        status_frame.pack(fill=tk.X, pady=(15, 0), padx=5)  # Reduced top padding
 
         status_title = tk.Label(status_frame, text="📊 Circuit Status",
                                font=('Arial', 10, 'bold'), fg='#4ecdc4', bg='#3a3a3a')
@@ -466,6 +472,257 @@ class SandboxMode:
         self.qubits_info_label = tk.Label(status_frame, text=f"Qubits: {self.num_qubits}",
                                          font=('Arial', 9), fg='#ffffff', bg='#3a3a3a')
         self.qubits_info_label.pack(pady=(0, 5))
+
+
+    def open_3d_visualizer(self):
+        """Open the 3D quantum state visualizer window"""
+        try:
+            # Check if there are any gates to visualize
+            if not self.placed_gates:
+                messagebox.showinfo("3D Visualizer", "Add some gates to your circuit first to see the 3D visualization!")
+                self.play_sound('error', self.play_error_sound_fallback)
+                return
+
+            # Play sound for button click
+            self.play_sound('click')
+
+            # Create the quantum circuit
+            qc = QuantumCircuit(self.num_qubits)
+            self.set_initial_state(qc)
+
+            # Apply gates
+            for gate, qubits in self.placed_gates:
+                try:
+                    if gate == 'H' and len(qubits) == 1:
+                        qc.h(qubits[0])
+                    elif gate == 'X' and len(qubits) == 1:
+                        qc.x(qubits[0])
+                    elif gate == 'Y' and len(qubits) == 1:
+                        qc.y(qubits[0])
+                    elif gate == 'Z' and len(qubits) == 1:
+                        qc.z(qubits[0])
+                    elif gate == 'S' and len(qubits) == 1:
+                        qc.s(qubits[0])
+                    elif gate == 'T' and len(qubits) == 1:
+                        qc.t(qubits[0])
+                    elif gate == 'CNOT' and len(qubits) == 2:
+                        qc.cx(qubits[0], qubits[1])
+                    elif gate == 'CZ' and len(qubits) == 2:
+                        qc.cz(qubits[0], qubits[1])
+                    elif gate == 'Toffoli' and len(qubits) == 3:
+                        qc.ccx(qubits[0], qubits[1], qubits[2])
+                except Exception as gate_error:
+                    print(f"Error applying gate {gate}: {str(gate_error)}")
+
+            # Get the final state
+            final_state = Statevector(qc)
+
+            # Create and show the 3D visualization window
+            self.show_3d_visualization(final_state)
+
+        except ImportError as ie:
+            messagebox.showerror("Import Error",
+                f"Missing required packages for 3D visualization.\n\n"
+                f"Please install: pip install matplotlib\n"
+                f"Error: {str(ie)}")
+            self.play_sound('error', self.play_error_sound_fallback)
+        except Exception as e:
+            messagebox.showerror("3D Visualizer Error",
+                f"Error creating 3D visualization:\n{str(e)}")
+            self.play_sound('error', self.play_error_sound_fallback)
+
+    def show_3d_visualization(self, state_vector):
+        """Show the 3D quantum state visualization in a new window"""
+        try:
+            # Create a new window for the 3D visualization
+            viz_window = tk.Toplevel(self.root)
+            viz_window.title("🌐 3D Quantum State Visualizer")
+            viz_window.configure(bg='#1a1a1a')
+
+            # Set window size and center it
+            window_width = 900
+            window_height = 700
+            screen_width = viz_window.winfo_screenwidth()
+            screen_height = viz_window.winfo_screenheight()
+            x = (screen_width - window_width) // 2
+            y = (screen_height - window_height) // 2
+            viz_window.geometry(f"{window_width}x{window_height}+{x}+{y}")
+
+            # Create header
+            header_frame = tk.Frame(viz_window, bg='#2a2a2a', relief=tk.RAISED, bd=2)
+            header_frame.pack(fill=tk.X, padx=10, pady=(10, 5))
+
+            header_title = tk.Label(header_frame, text="🌐 3D Quantum State Visualization",
+                                   font=('Arial', 16, 'bold'), fg='#00ff88', bg='#2a2a2a')
+            header_title.pack(pady=10)
+
+            # Create info panel
+            info_frame = tk.Frame(viz_window, bg='#2a2a2a', relief=tk.RAISED, bd=1)
+            info_frame.pack(fill=tk.X, padx=10, pady=5)
+
+            info_text = tk.Label(info_frame,
+                text=f"Circuit: {self.num_qubits} qubits, {len(self.placed_gates)} gates | "
+                     f"Gates: {[gate for gate, _ in self.placed_gates]}",
+                font=('Arial', 10), fg='#4ecdc4', bg='#2a2a2a')
+            info_text.pack(pady=8)
+
+            # Create visualization container
+            viz_container = tk.Frame(viz_window, bg='#1a1a1a', relief=tk.SUNKEN, bd=3)
+            viz_container.pack(fill=tk.BOTH, expand=True, padx=10, pady=5)
+
+            # Create matplotlib figure with dark theme
+            plt.style.use('dark_background')
+
+            # Choose visualization based on number of qubits
+            if self.num_qubits == 1:
+                # For single qubit, show Bloch sphere
+                try:
+                    fig = plot_bloch_multivector(state_vector)
+                    fig.suptitle('Single Qubit Bloch Sphere Visualization',
+                               fontsize=16, color='#00ff88', fontweight='bold')
+                except Exception as bloch_error:
+                    print(f"Bloch sphere error: {bloch_error}")
+                    # Fallback to qsphere if bloch sphere fails
+                    fig = plot_state_qsphere(state_vector)
+                    fig.suptitle('Single Qubit Q-Sphere Visualization',
+                               fontsize=16, color='#00ff88', fontweight='bold')
+
+            else:
+                # For multiple qubits, show Q-sphere
+                fig = plot_state_qsphere(state_vector)
+                fig.suptitle(f'{self.num_qubits}-Qubit Q-Sphere Visualization',
+                           fontsize=16, color='#00ff88', fontweight='bold')
+
+            # Customize the plot appearance
+            fig.patch.set_facecolor('#1a1a1a')
+
+            # Make sure all axes have dark background
+            for ax in fig.get_axes():
+                ax.set_facecolor('#1a1a1a')
+                # Set text colors to be visible on dark background
+                ax.tick_params(colors='white')
+                ax.xaxis.label.set_color('white')
+                ax.yaxis.label.set_color('white')
+                if hasattr(ax, 'zaxis'):
+                    ax.zaxis.label.set_color('white')
+
+            # Embed the matplotlib figure in tkinter
+            canvas = FigureCanvasTkAgg(fig, viz_container)
+            canvas.draw()
+            canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
+
+            # Add control buttons at the bottom
+            controls_frame = tk.Frame(viz_window, bg='#2a2a2a')
+            controls_frame.pack(fill=tk.X, padx=10, pady=5)
+
+            # Save button
+            save_btn = tk.Button(controls_frame, text="💾 Save Image",
+                               command=lambda: self.save_3d_visualization(fig),
+                               font=('Arial', 10, 'bold'), bg='#4ecdc4', fg='#000000',
+                               padx=15, pady=8, cursor='hand2', relief=tk.RAISED, bd=2)
+            save_btn.pack(side=tk.LEFT, padx=5)
+
+            # Refresh button
+            refresh_btn = tk.Button(controls_frame, text="🔄 Refresh",
+                                  command=lambda: self.refresh_3d_visualization(viz_window, state_vector),
+                                  font=('Arial', 10, 'bold'), bg='#f39c12', fg='#000000',
+                                  padx=15, pady=8, cursor='hand2', relief=tk.RAISED, bd=2)
+            refresh_btn.pack(side=tk.LEFT, padx=5)
+
+            # Close button
+            close_btn = tk.Button(controls_frame, text="❌ Close",
+                                command=viz_window.destroy,
+                                font=('Arial', 10, 'bold'), bg='#ff6b6b', fg='#ffffff',
+                                padx=15, pady=8, cursor='hand2', relief=tk.RAISED, bd=2)
+            close_btn.pack(side=tk.RIGHT, padx=5)
+
+            # Add some state information
+            state_info_frame = tk.Frame(viz_window, bg='#2a2a2a', relief=tk.RAISED, bd=1)
+            state_info_frame.pack(fill=tk.X, padx=10, pady=(0, 10))
+
+            # Calculate and display state information
+            state_data = state_vector.data
+            entangled = self.is_state_entangled(state_vector) if self.num_qubits > 1 else False
+
+            info_text = f"🔬 State Analysis: "
+            if entangled:
+                info_text += "Entangled state detected! "
+            else:
+                info_text += "Separable state. "
+
+            # Count significant amplitudes
+            significant_states = sum(1 for amp in state_data if abs(amp) > 0.001)
+            info_text += f"Active basis states: {significant_states}/{2**self.num_qubits}"
+
+            state_label = tk.Label(state_info_frame, text=info_text,
+                                 font=('Arial', 10), fg='#ffffff', bg='#2a2a2a')
+            state_label.pack(pady=8)
+
+            # Play success sound
+            self.play_sound('success', self.play_success_sound_fallback)
+
+        except Exception as e:
+            messagebox.showerror("Visualization Error",
+                f"Error creating 3D visualization:\n{str(e)}")
+            self.play_sound('error', self.play_error_sound_fallback)
+            print(f"Full visualization error: {e}")
+            import traceback
+            traceback.print_exc()
+
+    def is_state_entangled(self, state_vector):
+        """Simple check for entanglement (for educational purposes)"""
+        try:
+            if self.num_qubits != 2:
+                return False  # Simple check only for 2 qubits
+
+            # For a 2-qubit state to be separable, it should be expressible as |a⟩⊗|b⟩
+            # This is a simplified check
+            state_data = state_vector.data
+
+            # Check if the state can be written as a product state
+            # |00⟩ + |11⟩ (Bell state) would be entangled
+            # |00⟩ or |01⟩ or |10⟩ or |11⟩ would be separable
+
+            # Count non-zero amplitudes
+            non_zero_count = sum(1 for amp in state_data if abs(amp) > 0.001)
+
+            # If more than one basis state has significant amplitude, might be entangled
+            # This is a very simplified check
+            return non_zero_count > 1 and not (abs(state_data[0]) > 0.99 or abs(state_data[1]) > 0.99 or
+                                             abs(state_data[2]) > 0.99 or abs(state_data[3]) > 0.99)
+        except:
+            return False
+
+    def save_3d_visualization(self, fig):
+        """Save the 3D visualization as an image"""
+        try:
+            from tkinter import filedialog
+
+            filename = filedialog.asksaveasfilename(
+                defaultextension=".png",
+                filetypes=[("PNG files", "*.png"), ("PDF files", "*.pdf"), ("SVG files", "*.svg")],
+                title="Save 3D Visualization"
+            )
+
+            if filename:
+                fig.savefig(filename, dpi=300, bbox_inches='tight',
+                          facecolor='#1a1a1a', edgecolor='none')
+                messagebox.showinfo("Success", f"Visualization saved as {filename}")
+                self.play_sound('success', self.play_success_sound_fallback)
+
+        except Exception as e:
+            messagebox.showerror("Save Error", f"Error saving visualization:\n{str(e)}")
+            self.play_sound('error', self.play_error_sound_fallback)
+
+    def refresh_3d_visualization(self, viz_window, state_vector):
+        """Refresh the 3D visualization"""
+        try:
+            # Close current window and reopen with updated state
+            viz_window.destroy()
+            self.open_3d_visualizer()
+        except Exception as e:
+            messagebox.showerror("Refresh Error", f"Error refreshing visualization:\n{str(e)}")
+
 
     def setup_results_area(self, parent):
         """Setup the results display area on the right side"""
