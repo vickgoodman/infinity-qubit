@@ -1040,13 +1040,26 @@ class PuzzleMode:
     def check_solution(self, final_state, level):
         """Check if the solution is correct"""
         target_state = self.get_target_state(level)
+        
+        # Debug output for level 18
+        if level['name'] == "Quantum Teleportation Setup":
+            print(f"\n=== Level 18 Debug ===")
+            print(f"Target state shape: {target_state.shape}")
+            print(f"Final state shape: {final_state.data.shape}")
+            print(f"Target state: {target_state}")
+            print(f"Final state: {final_state.data}")
+            print(f"Absolute difference: {np.abs(target_state - final_state.data)}")
+            print(f"Max difference: {np.max(np.abs(target_state - final_state.data))}")
+        
         fidelity = abs(np.vdot(target_state, final_state.data)) ** 2
+        print(f"Fidelity: {fidelity}")
+
         return fidelity > 0.99
 
     def get_target_state(self, level):
         """Get the target quantum state vector"""
         target = level['target_state']
-        
+
         # Define common quantum states
         states = {
             "|0⟩": np.array([1, 0]),
@@ -1065,15 +1078,16 @@ class PuzzleMode:
             "|Ψ-⟩": np.array([0, 1, -1, 0]) / np.sqrt(2),
             "|GHZ⟩": np.array([1, 0, 0, 0, 0, 0, 0, 1]) / np.sqrt(2),
             "|W⟩": np.array([0, 1, 1, 0, 1, 0, 0, 0]) / np.sqrt(3),
-            # Add more complex states for advanced levels
-            "|0Φ+⟩": np.array([1, 0, 0, 0, 0, 1, 0, 0]) / np.sqrt(2),  # |0⟩ ⊗ |Φ+⟩
-            "|Secret⟩": np.array([1, 1, 1, -1, 1, -1, -1, 1]) / (2 * np.sqrt(2)),  # Example secret sharing state
-            "|Interference⟩": np.array([1, 0, 0, -1]) / np.sqrt(2),  # Destructive interference
-            "|ErrorCode⟩": np.array([1, 0, 0, 0, 0, 0, 0, 0]),  # 3-qubit error code for |0⟩
-            "|MaxEnt⟩": np.array([1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]) / 4,  # 4-qubit maximally entangled
-            "|Ultimate⟩": np.array([1, 1j, -1, -1j, 1j, -1, -1j, 1, -1, -1j, 1, 1j, -1j, 1, 1j, -1]) / 4,  # Complex ultimate state
-            "|QFT⟩": np.array([1, 1, 1, 1]) / 2,  # 2-qubit QFT of |00⟩
-            "|err⟩": np.array([1, 1, 1, 0, 1, 0, 0, 0]) / np.sqrt(4)  # Error syndrome state
+            # CORRECTED: Level 18 target should be |Φ+⟩ on qubits 0,1 with qubit 2 in |0⟩
+            # This means (|00⟩ + |11⟩)/√2 ⊗ |0⟩ = (|000⟩ + |110⟩)/√2
+            "|0Φ+⟩": np.array([1, 0, 0, 0, 0, 0, 1, 0]) / np.sqrt(2),  # |000⟩ + |110⟩
+            "|Secret⟩": np.array([1, 1, 1, -1, 1, -1, -1, 1]) / (2 * np.sqrt(2)),
+            "|Interference⟩": np.array([1, 0, 0, -1]) / np.sqrt(2),
+            "|ErrorCode⟩": np.array([1, 0, 0, 0, 0, 0, 0, 0]),
+            "|MaxEnt⟩": np.array([1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]) / 4,
+            "|Ultimate⟩": np.array([1, 1j, -1, -1j, 1j, -1, -1j, 1, -1, -1j, 1, 1j, -1j, 1, 1j, -1]) / 4,
+            "|QFT⟩": np.array([1, 1, 1, 1]) / 2,
+            "|err⟩": np.array([1, 1, 1, 0, 1, 0, 0, 0]) / np.sqrt(4)
         }
         
         return states.get(target, np.array([1, 0]))
