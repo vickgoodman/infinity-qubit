@@ -229,22 +229,20 @@ class GameModeSelection:
             '#e74c3c': '#ec7063'
         }
         return color_map.get(color, color)
-    
-    def start_tutorial_mode(self):
-        """Start the tutorial mode (main game)"""
-        print("🎮 Starting Puzzle Mode...")
-        self.root.destroy()
-        try:
-            # The code for the puzzle mode is in the tutorial.py file
-            from tutorial import main
-            main()  # Start the main game function
 
+    def start_tutorial_mode(self):
+        """Start the tutorial mode"""
+        print("📚 Starting Tutorial Mode...")
+        # Don't destroy the root window yet - let the tutorial be a child window
+        try:
+            from tutorial import show_tutorial
+            show_tutorial(self.root)
         except ImportError as e:
-            print(f"❌ Error importing puzzle mode: {e}")
-            messagebox.showerror("Import Error", f"Could not import main module: {e}")
+            print(f"❌ Error importing tutorial: {e}")
+            messagebox.showerror("Import Error", f"Could not import tutorial module: {e}")
         except Exception as e:
-            print(f"❌ Error starting puzzle mode: {e}")
-            messagebox.showerror("Error", f"Failed to start puzzle mode: {e}")
+            print(f"❌ Error starting tutorial: {e}")
+            messagebox.showerror("Error", f"Failed to start tutorial: {e}")
     
     def start_puzzle_mode(self):
         """Start the puzzle mode"""
