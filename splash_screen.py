@@ -49,66 +49,66 @@ class SplashScreen:
         """Create the content for the splash screen"""
         # Main container
         main_frame = tk.Frame(self.splash, bg='#1a1a1a')
-        main_frame.pack(fill=tk.BOTH, expand=True)
+        main_frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
         
-        # Title
+        # Title - increased top padding and adjusted font
         title_label = tk.Label(main_frame, text="🔬 Infinity Qubit",
-                              font=('Arial', 32, 'bold'), 
-                              fg='#00ff88', bg='#1a1a1a')
-        title_label.pack(pady=(60, 20))
+                            font=('Arial', 28, 'bold'),  # Slightly smaller font
+                            fg='#00ff88', bg='#1a1a1a')
+        title_label.pack(pady=(40, 15))  # More balanced padding
         
-        # Subtitle
+        # Subtitle - added more padding
         subtitle_label = tk.Label(main_frame, text="Quantum Computing Educational Game",
-                                 font=('Arial', 16), 
-                                 fg='#ffffff', bg='#1a1a1a')
-        subtitle_label.pack(pady=(0, 40))
+                                font=('Arial', 14),  # Slightly smaller
+                                fg='#ffffff', bg='#1a1a1a')
+        subtitle_label.pack(pady=(5, 30))  # Better spacing
         
-        # Quantum circuit animation area
+        # Quantum circuit animation area - reduced padding
         self.animation_frame = tk.Frame(main_frame, bg='#1a1a1a')
-        self.animation_frame.pack(pady=20)
+        self.animation_frame.pack(pady=15)
         
         # Create animated quantum gates
         self.create_quantum_animation()
         
-        # Loading text
+        # Loading text - increased padding and better positioning
         self.loading_label = tk.Label(main_frame, text="Initializing quantum circuits...",
-                                     font=('Arial', 12), 
-                                     fg='#4ecdc4', bg='#1a1a1a')
-        self.loading_label.pack(pady=(40, 10))
+                                    font=('Arial', 11),  # Slightly smaller
+                                    fg='#4ecdc4', bg='#1a1a1a')
+        self.loading_label.pack(pady=(30, 15))  # More space above and below
         
         # Progress bar
         self.progress = ttk.Progressbar(main_frame, mode='indeterminate', 
-                                       length=300, style='Splash.Horizontal.TProgressbar')
-        self.progress.pack(pady=10)
+                                    length=300, style='Splash.Horizontal.TProgressbar')
+        self.progress.pack(pady=(5, 20))  # Better spacing
         
-        # Version info
+        # Version info - with more space from bottom
         version_label = tk.Label(main_frame, text="Version 1.0 | Built with Qiskit",
-                                font=('Arial', 10), 
+                                font=('Arial', 9),  # Smaller font
                                 fg='#888888', bg='#1a1a1a')
-        version_label.pack(side=tk.BOTTOM, pady=(0, 20))
+        version_label.pack(side=tk.BOTTOM, pady=(10, 15))  # More space from bottom
         
         # Configure progress bar style
         style = ttk.Style()
         style.theme_use('clam')
         style.configure('Splash.Horizontal.TProgressbar',
-                       background='#00ff88',
-                       troughcolor='#2a2a2a',
-                       borderwidth=0,
-                       lightcolor='#00ff88',
-                       darkcolor='#00ff88')
+                    background='#00ff88',
+                    troughcolor='#2a2a2a',
+                    borderwidth=0,
+                    lightcolor='#00ff88',
+                    darkcolor='#00ff88')
     
     def create_quantum_animation(self):
         """Create animated quantum circuit elements"""
-        # Create a simple quantum circuit visualization
-        circuit_canvas = tk.Canvas(self.animation_frame, width=400, height=100,
-                                  bg='#1a1a1a', highlightthickness=0)
-        circuit_canvas.pack()
+        # Create a simple quantum circuit visualization - slightly smaller
+        circuit_canvas = tk.Canvas(self.animation_frame, width=380, height=90,
+                                bg='#1a1a1a', highlightthickness=0)
+        circuit_canvas.pack(pady=10)  # Add some padding around canvas
         
         # Draw quantum wires
         for i in range(3):
-            y = 20 + i * 30
-            circuit_canvas.create_line(50, y, 350, y, fill='#ffffff', width=2)
-            circuit_canvas.create_text(30, y, text=f'q{i}', fill='#ffffff', font=('Arial', 10))
+            y = 15 + i * 25  # Reduced spacing between wires
+            circuit_canvas.create_line(50, y, 330, y, fill='#ffffff', width=2)
+            circuit_canvas.create_text(30, y, text=f'q{i}', fill='#ffffff', font=('Arial', 9))
         
         # Store canvas reference for animation
         self.circuit_canvas = circuit_canvas
@@ -132,15 +132,15 @@ class SplashScreen:
             
             # Draw gates at current positions
             for i, (x, color, label) in enumerate(zip(self.gate_positions, self.gate_colors, self.gate_labels)):
-                y = 20 + i * 30
+                y = 15 + i * 25  # Match the wire positions
                 
-                # Gate rectangle
-                self.circuit_canvas.create_rectangle(x-20, y-15, x+20, y+15,
-                                                   fill=color, outline='#ffffff', width=2, tags="gate")
+                # Gate rectangle - slightly smaller
+                self.circuit_canvas.create_rectangle(x-18, y-12, x+18, y+12,
+                                                fill=color, outline='#ffffff', width=2, tags="gate")
                 
                 # Gate label
                 self.circuit_canvas.create_text(x, y, text=label, fill='#000000',
-                                              font=('Arial', 12, 'bold'), tags="gate")
+                                            font=('Arial', 10, 'bold'), tags="gate")
         except tk.TclError:
             # Canvas has been destroyed, stop animation
             self.animation_active = False
@@ -194,7 +194,7 @@ class SplashScreen:
                     # Move gates slightly
                     for i in range(len(self.gate_positions)):
                         self.gate_positions[i] += 2
-                        if self.gate_positions[i] > 370:
+                        if self.gate_positions[i] > 350:  # Adjusted for smaller canvas
                             self.gate_positions[i] = 80
                     
                     self.draw_animated_gates()
