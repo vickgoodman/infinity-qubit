@@ -97,18 +97,31 @@ class PuzzleMode:
     def load_sounds(self):
         """Load sound effects for the puzzle mode"""
         try:
-            # Placeholder for sound loading - you can add actual sound files here
-            self.sounds = {
-                'button_click': None,
-                'gate_place': None,
-                'success': None,
-                'error': None,
-                'clear': None,
-                'level_complete': None
+            # Define sound file paths
+            sound_files = {
+                'button_click': 'sounds/click.wav',
+                'gate_place': 'sounds/click.wav',
+                'success': 'sounds/success.wav',
+                'error': 'sounds/error.wav',
+                'clear': 'sounds/clear.wav',
+                'level_complete': 'sounds/success.wav'
             }
+            
+            # Load sounds into pygame
+            self.sounds = {}
+            for sound_name, file_path in sound_files.items():
+                try:
+                    self.sounds[sound_name] = pygame.mixer.Sound(file_path)
+                    print(f"✅ Loaded sound: {sound_name}")
+                except pygame.error as e:
+                    print(f"⚠️ Could not load {sound_name} from {file_path}: {e}")
+                    # Create a placeholder/dummy sound or skip this sound
+                    self.sounds[sound_name] = None
+                    
         except Exception as e:
             print(f"Warning: Could not load sounds: {e}")
             self.sound_enabled = False
+            self.sounds = {}
 
     def play_sound(self, sound_name):
         """Play a sound effect"""
@@ -116,8 +129,10 @@ class PuzzleMode:
             return
         
         try:
-            # Placeholder for sound playing - implement based on your sound system
-            pass
+            if sound_name in self.sounds and self.sounds[sound_name] is not None:
+                self.sounds[sound_name].play()
+            else:
+                print(f"⚠️ Sound '{sound_name}' not available")
         except Exception as e:
             print(f"Warning: Could not play sound {sound_name}: {e}")
 
