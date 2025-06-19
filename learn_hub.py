@@ -81,16 +81,16 @@ class LearnHub:
         top_border = tk.Frame(main_frame, bg='#00ff88', height=3)
         top_border.pack(fill=tk.X)
 
-        # Content frame - changed to match tab background
-        content_frame = tk.Frame(main_frame, bg='#2a2a2a')  # Changed from #1a1a1a to #2a2a2a
-        content_frame.pack(fill=tk.BOTH, expand=True, padx=25, pady=25)
+        # Content frame - removed padding to fill entire window
+        content_frame = tk.Frame(main_frame, bg='#2a2a2a')
+        content_frame.pack(fill=tk.BOTH, expand=True)  # Removed padx=25, pady=25
 
-        # Create animated header
+        # Create animated header with internal padding
         self.create_animated_header(content_frame)
 
-        # Create a container to center the notebook - changed to match
-        notebook_container = tk.Frame(content_frame, bg='#2a2a2a')  # Changed from #1a1a1a to #2a2a2a
-        notebook_container.pack(fill=tk.BOTH, expand=True, pady=(20, 0))
+        # Create a container to center the notebook
+        notebook_container = tk.Frame(content_frame, bg='#2a2a2a')
+        notebook_container.pack(fill=tk.BOTH, expand=True, padx=25, pady=(0, 25))  # Added padding here instead
 
         # Create notebook for tabs - centered
         self.notebook = ttk.Notebook(notebook_container)
@@ -110,18 +110,18 @@ class LearnHub:
 
     def create_animated_header(self, parent):
         """Create an animated quantum-themed header"""
-        header_frame = tk.Frame(parent, bg='#2a2a2a')  # Changed from #1a1a1a to #2a2a2a
-        header_frame.pack(fill=tk.X, pady=(0, 20))
+        header_frame = tk.Frame(parent, bg='#2a2a2a')
+        header_frame.pack(fill=tk.X, padx=25, pady=(25, 20))  # Added padding here for internal spacing
 
         # Add a top navigation bar
-        nav_frame = tk.Frame(header_frame, bg='#2a2a2a')  # Changed from #1a1a1a to #2a2a2a
+        nav_frame = tk.Frame(header_frame, bg='#2a2a2a')
         nav_frame.pack(fill=tk.X, pady=(0, 10))
 
         # Back to Main Screen button - top right
         back_main_btn = tk.Button(nav_frame, text="🏠 Main Screen",
                                 command=self.back_to_menu,
                                 font=('Arial', 10, 'bold'),
-                                bg='#3a3a3a', fg='#4ecdc4',  # Adjusted for gray background
+                                bg='#3a3a3a', fg='#4ecdc4',
                                 padx=15, pady=8,
                                 cursor='hand2',
                                 relief=tk.FLAT,
@@ -139,7 +139,7 @@ class LearnHub:
         back_main_btn.bind("<Leave>", on_nav_leave)
 
         # Quantum circuit animation canvas
-        self.circuit_canvas = tk.Canvas(header_frame, height=120, bg='#2a2a2a',  # Changed from #1a1a1a to #2a2a2a
+        self.circuit_canvas = tk.Canvas(header_frame, height=120, bg='#2a2a2a',
                                     highlightthickness=0)
         self.circuit_canvas.pack(fill=tk.X, pady=(0, 15))
 
@@ -147,26 +147,26 @@ class LearnHub:
         self.root.after(100, self.draw_quantum_circuit)
 
         # Title with shadow effect
-        title_frame = tk.Frame(header_frame, bg='#2a2a2a')  # Changed from #1a1a1a to #2a2a2a
+        title_frame = tk.Frame(header_frame, bg='#2a2a2a')
         title_frame.pack()
 
         # Shadow title
         shadow_title = tk.Label(title_frame, text="🚀 Quantum Computing Learn Hub",
                             font=('Arial', 32, 'bold'),
-                            fg='#003322', bg='#2a2a2a')  # Changed from #1a1a1a to #2a2a2a
+                            fg='#003322', bg='#2a2a2a')
         shadow_title.place(x=3, y=3)
 
         # Main title with gradient-like effect
         main_title = tk.Label(title_frame, text="🚀 Quantum Computing Learn Hub",
                             font=('Arial', 32, 'bold'),
-                            fg='#00ff88', bg='#2a2a2a')  # Changed from #1a1a1a to #2a2a2a
+                            fg='#00ff88', bg='#2a2a2a')
         main_title.pack(pady=(0, 8))
 
         # Enhanced subtitle with pulsing effect
         self.subtitle_label = tk.Label(header_frame,
                                     text="✨ Explore quantum computing concepts and resources ✨",
                                     font=('Arial', 14, 'italic'),
-                                    fg='#4ecdc4', bg='#2a2a2a')  # Changed from #1a1a1a to #2a2a2a
+                                    fg='#4ecdc4', bg='#2a2a2a')
         self.subtitle_label.pack()
 
         # Learning progress indicator
@@ -982,11 +982,11 @@ The quantum future awaits! 🌟🚀
 
     def create_enhanced_footer(self, parent):
         """Create enhanced footer with gradient buttons"""
-        footer_frame = tk.Frame(parent, bg='#2a2a2a')  # Changed from #1a1a1a to #2a2a2a
-        footer_frame.pack(fill=tk.X, pady=(25, 0))
+        footer_frame = tk.Frame(parent, bg='#2a2a2a')
+        footer_frame.pack(fill=tk.X, padx=25, pady=(25, 25))  # Added padding here for internal spacing
 
         # Create a centered button container
-        button_container = tk.Frame(footer_frame, bg='#2a2a2a')  # Changed from #1a1a1a to #2a2a2a
+        button_container = tk.Frame(footer_frame, bg='#2a2a2a')
         button_container.pack(expand=True)
 
         # Back to Main Screen button with enhanced styling
