@@ -448,6 +448,9 @@ class PuzzleMode:
             main_frame = tk.Frame(self.root, bg='#1a1a1a')
             main_frame.pack(fill=tk.BOTH, expand=True)
 
+        # Set up window close protocol
+        self.root.protocol("WM_DELETE_WINDOW", self.on_window_close)
+
         # Adaptive font sizes
         title_font_size = max(16, int(self.window_width / 80))
         header_font_size = max(12, int(self.window_width / 120))
@@ -467,7 +470,7 @@ class PuzzleMode:
         self.level_label.pack(side=tk.LEFT, padx=20)
 
         self.difficulty_label = tk.Label(info_frame, text="Difficulty: Beginner",
-                                      font=('Arial', header_font_size, 'bold'), fg='#4ecdc4', bg='#1a1a1a')
+                                    font=('Arial', header_font_size, 'bold'), fg='#4ecdc4', bg='#1a1a1a')
         self.difficulty_label.pack(side=tk.LEFT, padx=20)
 
         self.score_label = tk.Label(info_frame, text="Score: 0",
@@ -526,9 +529,15 @@ class PuzzleMode:
 
         # Add skip button for very difficult levels
         self.skip_button = tk.Button(controls_frame, text="⏭️ Skip Level",
-                                   command=self.skip_level, font=('Arial', button_font_size),
-                                   bg='#f39c12', fg='#000000', padx=button_padx, pady=button_pady)
+                                command=self.skip_level, font=('Arial', button_font_size),
+                                bg='#f39c12', fg='#000000', padx=button_padx, pady=button_pady)
         self.skip_button.pack(side=tk.LEFT, padx=10)
+
+        # Add Main Menu button
+        self.main_menu_button = tk.Button(controls_frame, text="🏠 Main Menu",
+                                        command=self.return_to_main_menu, font=('Arial', button_font_size, 'bold'),
+                                        bg='#9b59b6', fg='#ffffff', padx=button_padx, pady=button_pady)
+        self.main_menu_button.pack(side=tk.LEFT, padx=10)
 
         # Status and state display
         status_frame = tk.Frame(main_frame, bg='#2a2a2a', relief=tk.RAISED, bd=3)
@@ -549,6 +558,38 @@ class PuzzleMode:
                                     font=('Courier', 9), bg='#1a1a1a', fg='#00ff88',
                                     relief=tk.SUNKEN, bd=2)
         self.state_display.pack(pady=10, padx=20)
+
+    def return_to_main_menu(self):
+        """Return to main menu from button click"""
+        self.play_sound('button_click')
+        result = messagebox.askyesno("Return to Main Menu", 
+                                "Are you sure you want to return to the main menu? Your progress will be lost.")
+        if result:
+            self.go_back_to_menu()
+
+    def on_window_close(self):
+        """Handle window close event (X button)"""
+        self.go_back_to_menu()
+
+    def go_back_to_menu(self):
+        """Navigate back to the game mode selection"""
+        self.root.destroy()
+        # Start the game mode selection
+        try:
+            from game_mode_selection import GameModeSelection
+            # Don't create a new root window - let GameModeSelection handle it
+            GameModeSelection()
+        except ImportError:
+            print("Could not return to main menu - game_mode_selection module not found")
+        except Exception as e:
+            print(f"Error returning to main menu: {e}")
+            # Fallback: try to run the main game file
+            try:
+                import subprocess
+                import sys
+                subprocess.Popen([sys.executable, "main.py"])
+            except Exception as fallback_error:
+                print(f"Fallback also failed: {fallback_error}")
 
     def load_level(self, level_index):
         """Load a specific puzzle level"""
@@ -1311,16 +1352,7 @@ class PuzzleMode:
     def return_to_menu(self, dialog):
         """Return to main menu"""
         dialog.destroy()
-        self.root.destroy()
-        # Import and start game mode selection
-        try:
-            from game_mode_selection import GameModeSelection
-            import tkinter as tk
-            root = tk.Tk()
-            GameModeSelection(root)
-            root.mainloop()
-        except ImportError:
-            print("Could not return to main menu")
+        self.go_back_to_menu()
 
 if __name__ == "__main__":
     root = tk.Tk()
