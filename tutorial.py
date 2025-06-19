@@ -10,21 +10,27 @@ from PIL import Image, ImageTk
 import pygame
 
 class TutorialWindow:
-    def __init__(self, parent):
+    def __init__(self, parent, return_callback=None):
         self.parent = parent
+        self.return_callback = return_callback
+        
+        # Create the window as a Toplevel but make it independent
         self.window = tk.Toplevel(parent)
         self.window.title("🎓 Quantum Gates Tutorial")
         self.window.geometry("900x700")
         self.window.configure(bg='#1a1a1a')
         self.window.resizable(False, False)
         
-        # Make window modal
-        self.window.transient(parent)
+        # Make window independent and visible even if parent is withdrawn
+        self.window.transient()  # Remove parent dependency
         self.window.grab_set()
         self.window.focus_set()
         
-        # Center window
-        self.center_window()
+        # Handle window close event
+        self.window.protocol("WM_DELETE_WINDOW", self.on_closing)
+        
+        # Center window on screen instead of parent
+        self.center_window_on_screen()
         
         # Gate information
         self.gate_info = {
@@ -95,6 +101,10 @@ class TutorialWindow:
         }
         
         self.setup_ui()
+        
+        # Ensure window is visible and on top
+        self.window.lift()
+        self.window.focus_force()
     
     def center_window(self):
         """Center the window on the parent"""
@@ -107,9 +117,35 @@ class TutorialWindow:
         x = parent_x + (parent_width // 2) - 450
         y = parent_y + (parent_height // 2) - 350
         self.window.geometry(f"900x700+{x}+{y}")
-    
+
+    def center_window_on_screen(self):
+        """Center the window on the screen"""
+        self.window.update_idletasks()
+        
+        # Get screen dimensions
+        screen_width = self.window.winfo_screenwidth()
+        screen_height = self.window.winfo_screenheight()
+        
+        # Get window dimensions
+        window_width = 900
+        window_height = 700
+        
+        # Calculate position
+        x = (screen_width - window_width) // 2
+        y = (screen_height - window_height) // 2
+        
+        self.window.geometry(f"{window_width}x{window_height}+{x}+{y}")
+
     def setup_ui(self):
         """Setup the tutorial interface"""
+        # Main Menu button in top right corner
+        if self.return_callback:
+            main_menu_btn = tk.Button(self.window, text="🏠 Main Menu",
+                                     command=self.return_to_main_menu,
+                                     font=('Arial', 10, 'bold'), bg='#00ff88', fg='#000000',
+                                     padx=15, pady=5)
+            main_menu_btn.place(x=780, y=10)
+
         # Title
         title_label = tk.Label(self.window, text="🎓 Quantum Gates Tutorial",
                               font=('Arial', 24, 'bold'), fg='#00ff88', bg='#1a1a1a')
@@ -154,16 +190,31 @@ Click on any gate below to see an interactive demonstration of how it works!"""
             for col_idx, gate in enumerate(row):
                 self.create_gate_button(row_frame, gate)
         
-        # Close button
-        close_frame = tk.Frame(self.window, bg='#1a1a1a')
-        close_frame.pack(pady=20)
-        
-        close_btn = tk.Button(close_frame, text="✖ Close Tutorial",
-                             command=self.window.destroy,
-                             font=('Arial', 12, 'bold'), bg='#ff6b6b', fg='#ffffff',
-                             padx=20, pady=10)
-        close_btn.pack()
+        # Close button (only if no return callback)
+        if not self.return_callback:
+            close_frame = tk.Frame(self.window, bg='#1a1a1a')
+            close_frame.pack(pady=20)
+            
+            close_btn = tk.Button(close_frame, text="✖ Close Tutorial",
+                                 command=self.window.destroy,
+                                 font=('Arial', 12, 'bold'), bg='#ff6b6b', fg='#ffffff',
+                                 padx=20, pady=10)
+            close_btn.pack()
     
+    def return_to_main_menu(self):
+        """Return to main menu"""
+        if self.return_callback:
+            self.window.destroy()
+            self.return_callback()
+
+    def on_closing(self):
+        """Handle window close event"""
+        if self.return_callback:
+            self.window.destroy()
+            self.return_callback()
+        else:
+            self.window.destroy()
+
     def create_gate_button(self, parent, gate):
         """Create a clickable gate button"""
         gate_frame = tk.Frame(parent, bg='#1a1a1a')
@@ -302,12 +353,16 @@ class GateTutorial:
                                    relief=tk.SUNKEN, bd=2)
         self.results_text.pack(pady=10, padx=20)
         
-        # Close button
-        close_btn = tk.Button(self.window, text="✖ Close",
-                             command=self.window.destroy,
-                             font=('Arial', 12, 'bold'), bg='#ff6b6b', fg='#ffffff',
-                             padx=20, pady=10)
-        close_btn.pack(pady=10)
+        # Close button (only if no return callback)
+        if not self.return_callback:
+            close_frame = tk.Frame(self.window, bg='#1a1a1a')
+            close_frame.pack(pady=20)
+            
+            close_btn = tk.Button(close_frame, text="✖ Close Tutorial",
+                                 command=self.on_closing,
+                                 font=('Arial', 12, 'bold'), bg='#ff6b6b', fg='#ffffff',
+                                 padx=20, pady=10)
+            close_btn.pack()
         
         # Initialize display
         self.draw_circuit()
@@ -498,7 +553,6 @@ class GateTutorial:
             except:
                 pass
 
-
-def show_tutorial(parent):
+def show_tutorial(parent, return_callback=None):
     """Show the tutorial window"""
-    TutorialWindow(parent)
+    TutorialWindow(parent, return_callback)
