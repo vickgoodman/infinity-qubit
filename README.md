@@ -56,7 +56,7 @@ python3 run_game.py
 
 ### Puzzle Mode in Action
 
-<!-- ![Puzzle mode gameplay](images/puzzle_mode.png) -->
+![Puzzle mode gameplay](images/puzzle_mode.png)
 
 ### Sandbox Circuit Builder
 
